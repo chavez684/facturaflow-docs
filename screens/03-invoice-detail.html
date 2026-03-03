@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FacturaFlow — Screen 3: Invoice Detail</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+  :root{
+    --primary:#16a34a;--primary-dark:#15803d;--primary-light:#dcfce7;--primary-50:#f0fdf4;
+    --red:#ef4444;--red-light:#fee2e2;--yellow:#f59e0b;--yellow-light:#fffbeb;--blue:#3b82f6;
+    --gray-900:#111827;--gray-800:#1f2937;--gray-700:#374151;--gray-600:#4b5563;
+    --gray-500:#6b7280;--gray-400:#9ca3af;--gray-300:#d1d5db;--gray-200:#e5e7eb;
+    --gray-100:#f3f4f6;--gray-50:#f9fafb;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Inter',sans-serif;background:var(--gray-50);color:var(--gray-900);font-size:14px;display:flex;min-height:100vh;flex-direction:column;padding-bottom:54px;}
+
+  /* TOP APPBAR */
+  .appbar{background:white;border-bottom:1px solid var(--gray-200);height:56px;display:flex;align-items:center;padding:0 20px;gap:16px;flex-shrink:0;z-index:10;}
+  .logo-icon{width:28px;height:28px;background:var(--primary);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;color:white;}
+  .logo-text{font-family:'Outfit',sans-serif;font-size:16px;font-weight:700;color:var(--gray-900);}
+  .logo-text span{color:var(--primary);}
+  .breadcrumb{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--gray-500);margin-left:8px;}
+  .breadcrumb a{color:var(--gray-600);text-decoration:none;}
+  .breadcrumb a:hover{color:var(--primary);}
+  .breadcrumb span{color:var(--gray-400);}
+
+  .invoice-badge{margin-left:auto;display:flex;align-items:center;gap:8px;}
+  .status-pill{padding:4px 12px;border-radius:99px;font-size:12px;font-weight:700;text-transform:uppercase;}
+  .status-pill.pending{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;}
+  .status-pill.blocked{background:#fef2f2;color:#991b1b;border:1px solid #fecaca;}
+  .status-pill.approved{background:var(--primary-50);color:#166534;border:1px solid #86efac;}
+
+  .appbar-actions{display:flex;gap:8px;margin-left:16px;}
+  .btn-sm{padding:7px 14px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid;display:flex;align-items:center;gap:5px;}
+  .btn-outline{background:white;border-color:var(--gray-200);color:var(--gray-700);}
+  .btn-outline:hover{background:var(--gray-50);}
+  .btn-danger{background:#fef2f2;border-color:#fecaca;color:var(--red);}
+  .btn-success{background:var(--primary);border-color:var(--primary);color:white;}
+  .btn-success:hover{background:var(--primary-dark);}
+
+  /* STATUS BANNER */
+  .status-banner{padding:10px 20px;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:500;}
+  .status-banner.warn{background:#fffbeb;border-bottom:1px solid #fde68a;}
+  .status-banner.warn .icon{color:var(--yellow);}
+  .status-banner.warn .text{color:#92400e;}
+
+  /* TABS */
+  .tabs-bar{background:white;border-bottom:1px solid var(--gray-200);padding:0 20px;display:flex;gap:4px;}
+  .tab{padding:12px 20px;font-size:13px;font-weight:500;color:var(--gray-500);cursor:pointer;border-bottom:3px solid transparent;transition:all 0.15s;}
+  .tab.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600;}
+  .tab:hover:not(.active){color:var(--gray-900);}
+
+  /* SPLIT LAYOUT */
+  .split-layout{display:flex;flex:1;overflow:hidden;height:calc(100vh - 56px - 40px - 49px - 72px);}
+
+  /* PDF PANEL */
+  .pdf-panel{width:42%;background:var(--gray-800);display:flex;flex-direction:column;border-right:1px solid var(--gray-700);}
+  .pdf-toolbar{display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--gray-900);border-bottom:1px solid var(--gray-700);}
+  .pdf-title{font-size:12px;font-weight:600;color:white;flex:1;font-family:'JetBrains Mono',monospace;}
+  .pdf-ctrl{display:flex;align-items:center;gap:4px;}
+  .pdf-btn{padding:4px 8px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:4px;color:rgba(255,255,255,0.7);font-size:11px;cursor:pointer;}
+  .pdf-zoom{font-size:11px;color:rgba(255,255,255,0.5);padding:0 8px;}
+  .pdf-body{flex:1;display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto;}
+  .pdf-page{background:white;width:100%;max-width:380px;aspect-ratio:0.77;border-radius:4px;box-shadow:0 4px 20px rgba(0,0,0,0.4);padding:32px;position:relative;}
+
+  /* Mock invoice content */
+  .inv-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid var(--gray-200);}
+  .inv-company{font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;color:var(--gray-900);}
+  .inv-sub{font-size:10px;color:var(--gray-500);margin-top:2px;}
+  .inv-num{text-align:right;}
+  .inv-num-label{font-size:18px;font-weight:800;font-family:'Outfit',sans-serif;color:var(--primary);}
+  .inv-num-val{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gray-600);}
+  .inv-section{margin-bottom:14px;}
+  .inv-section-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--gray-400);margin-bottom:6px;}
+  .inv-field{display:flex;justify-content:space-between;font-size:10px;color:var(--gray-700);padding:2px 0;}
+  .inv-field .label{color:var(--gray-500);}
+  .inv-field .value{font-weight:600;}
+  .inv-line-items{border:1px solid var(--gray-200);border-radius:6px;overflow:hidden;margin-bottom:14px;}
+  .inv-line-header{background:var(--gray-50);display:flex;font-size:9px;font-weight:700;text-transform:uppercase;color:var(--gray-500);letter-spacing:0.5px;padding:6px 10px;}
+  .inv-line-row{display:flex;font-size:10px;color:var(--gray-700);padding:6px 10px;border-top:1px solid var(--gray-100);}
+  .col-desc{flex:2;}
+  .col-qty{flex:0.8;text-align:center;}
+  .col-price{flex:1;text-align:right;}
+  .col-total{flex:1;text-align:right;font-weight:600;}
+  .inv-totals{border-top:1px solid var(--gray-200);padding-top:10px;margin-top:auto;}
+  .inv-total-row{display:flex;justify-content:space-between;font-size:10px;padding:2px 0;color:var(--gray-700);}
+  .inv-total-row.final{font-size:12px;font-weight:700;color:var(--gray-900);border-top:1px solid var(--gray-300);margin-top:4px;padding-top:4px;}
+  .pdf-nav{display:flex;align-items:center;justify-content:center;gap:8px;padding:10px;background:var(--gray-900);border-top:1px solid var(--gray-700);}
+  .pdf-nav-btn{padding:4px 10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:4px;color:rgba(255,255,255,0.6);font-size:11px;cursor:pointer;}
+  .pdf-page-info{font-size:11px;color:rgba(255,255,255,0.4);}
+
+  /* DATA PANEL */
+  .data-panel{flex:1;overflow-y:auto;background:var(--gray-50);}
+  .data-inner{padding:20px;}
+
+  /* CARDS */
+  .d-card{background:white;border:1px solid var(--gray-200);border-radius:10px;margin-bottom:16px;overflow:hidden;}
+  .d-card-header{padding:14px 16px;border-bottom:1px solid var(--gray-100);display:flex;align-items:center;justify-content:space-between;}
+  .d-card-title{font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;color:var(--gray-900);display:flex;align-items:center;gap:8px;}
+  .d-card-icon{font-size:16px;}
+  .d-card-body{padding:16px;}
+
+  /* SAT CHECKS */
+  .sat-check{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--gray-50);}
+  .sat-check:last-child{border-bottom:none;}
+  .sat-status-icon{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+  .sat-status-icon.ok{background:#dcfce7;color:#166534;}
+  .sat-status-icon.fail{background:#fee2e2;color:#991b1b;}
+  .sat-status-icon.warn{background:#fef3c7;color:#92400e;}
+  .sat-check-label{font-size:12px;font-weight:500;color:var(--gray-700);flex:1;}
+  .sat-check-value{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gray-500);}
+
+  /* FIELD ROWS */
+  .field-row{display:flex;align-items:center;padding:8px 0;border-bottom:1px solid var(--gray-50);gap:8px;}
+  .field-row:last-child{border-bottom:none;}
+  .field-label{width:130px;font-size:12px;color:var(--gray-500);flex-shrink:0;}
+  .field-value{flex:1;font-size:13px;color:var(--gray-900);font-weight:500;}
+  .field-value.code{font-family:'JetBrains Mono',monospace;font-size:12px;}
+  .field-edit-btn{opacity:0;transition:opacity 0.15s;padding:3px 7px;background:var(--gray-100);border:none;border-radius:4px;font-size:11px;cursor:pointer;color:var(--gray-600);}
+  .field-row:hover .field-edit-btn{opacity:1;}
+  .variance-badge{padding:2px 7px;border-radius:4px;font-size:11px;font-weight:600;}
+  .variance-badge.warn{background:#fef3c7;color:#92400e;}
+  .variance-badge.ok{background:#dcfce7;color:#166534;}
+  .variance-badge.bad{background:#fee2e2;color:#991b1b;}
+
+  /* CW MATCH */
+  .cw-match{display:flex;align-items:center;gap:8px;padding:10px;background:var(--primary-50);border:1px solid #86efac;border-radius:8px;margin-bottom:12px;}
+  .cw-match-icon{color:var(--primary);font-size:18px;}
+  .cw-match-text{font-size:12px;color:#166534;font-weight:500;}
+  .cw-match-link{margin-left:auto;font-size:12px;color:var(--primary);font-weight:600;cursor:pointer;}
+
+  /* EXCEPTIONS */
+  .exc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+  .exc-count{display:flex;gap:8px;}
+  .exc-badge{padding:3px 8px;border-radius:4px;font-size:11px;font-weight:700;}
+  .exc-badge.block{background:#fee2e2;color:#991b1b;}
+  .exc-badge.warn{background:#fef3c7;color:#92400e;}
+  .exc-item{border:1px solid var(--gray-200);border-radius:8px;overflow:hidden;margin-bottom:8px;}
+  .exc-item-header{display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;background:white;}
+  .exc-sev{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+  .exc-sev.warn{background:var(--yellow);}
+  .exc-sev.block{background:var(--red);}
+  .exc-code{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gray-700);font-weight:600;}
+  .exc-msg{font-size:12px;color:var(--gray-600);flex:1;}
+  .exc-chevron{color:var(--gray-400);font-size:14px;}
+  .exc-body{padding:12px;background:var(--gray-50);border-top:1px solid var(--gray-100);}
+  .exc-detail{font-size:11px;color:var(--gray-600);font-family:'JetBrains Mono',monospace;line-height:1.6;}
+  .exc-action{margin-top:8px;}
+  .exc-resolve-btn{padding:5px 12px;background:white;border:1px solid var(--gray-200);border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;color:var(--gray-700);}
+
+  /* STICKY FOOTER */
+  .action-footer{
+    position:sticky;bottom:0;background:white;border-top:1px solid var(--gray-200);
+    padding:14px 20px;display:flex;align-items:center;justify-content:space-between;
+    box-shadow:0 -4px 12px rgba(0,0,0,0.06);z-index:10;
+  }
+  .footer-left{display:flex;gap:8px;}
+  .footer-right{display:flex;gap:10px;}
+  .btn-lg{padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:none;display:flex;align-items:center;gap:6px;}
+  .btn-reject{background:#fef2f2;color:var(--red);border:1px solid #fecaca;}
+  .btn-approve{background:var(--primary);color:white;}
+  .btn-approve:hover{background:var(--primary-dark);}
+
+  .screen-label{position:fixed;bottom:90px;right:16px;background:var(--gray-800);color:white;font-size:11px;padding:6px 12px;border-radius:99px;display:flex;align-items:center;gap:6px;z-index:100;}
+  .screen-label .dot{width:6px;height:6px;background:var(--primary);border-radius:50%;}
+</style>
+</head>
+<body>
+
+<!-- APPBAR -->
+<div class="appbar">
+  <div class="logo-icon">📄</div>
+  <div class="logo-text">Factura<span>Flow</span></div>
+  <div class="breadcrumb">
+    <span>/</span>
+    <a href="#">Invoices</a>
+    <span>/</span>
+    <strong style="color:var(--gray-900)">WSI-2026-0312</strong>
+  </div>
+  <div class="invoice-badge">
+    <span class="status-pill pending">⏳ Pending Review</span>
+  </div>
+  <div class="appbar-actions">
+    <button class="btn-sm btn-outline">🔄 Reprocess</button>
+    <button class="btn-sm btn-outline">📎 Attach</button>
+    <button class="btn-sm btn-outline">📥 Download PDF</button>
+  </div>
+</div>
+
+<!-- STATUS BANNER -->
+<div class="status-banner warn">
+  <span class="icon">⚠️</span>
+  <span class="text">Invoice processed with <strong>1 blocking exception</strong> and <strong>1 warning</strong> — review before approving.</span>
+</div>
+
+<!-- TABS -->
+<div class="tabs-bar">
+  <div class="tab active">Overview</div>
+  <div class="tab">Audit Trail</div>
+  <div class="tab">Related Invoices</div>
+  <div class="tab">Documents</div>
+</div>
+
+<!-- SPLIT LAYOUT -->
+<div class="split-layout">
+
+  <!-- PDF PANEL -->
+  <div class="pdf-panel">
+    <div class="pdf-toolbar">
+      <div class="pdf-title">invoice_WSI_2026_0312.pdf</div>
+      <div class="pdf-ctrl">
+        <button class="pdf-btn">−</button>
+        <span class="pdf-zoom">100%</span>
+        <button class="pdf-btn">+</button>
+        <button class="pdf-btn">⤢</button>
+      </div>
+    </div>
+
+    <div class="pdf-body">
+      <!-- MOCK INVOICE PAGE -->
+      <div class="pdf-page">
+        <div class="inv-header">
+          <div>
+            <div class="inv-company">ACME Shipping SA de CV</div>
+            <div class="inv-sub">RFC: ACME8501015JA</div>
+            <div class="inv-sub">Av. Industrial 1250, Monterrey NL</div>
+          </div>
+          <div class="inv-num">
+            <div class="inv-num-label">FACTURA</div>
+            <div class="inv-num-val">INV-2026-0312</div>
+            <div class="inv-sub" style="text-align:right;margin-top:4px;">Feb 15, 2026</div>
+          </div>
+        </div>
+
+        <div class="inv-section">
+          <div class="inv-section-title">Bill To</div>
+          <div class="inv-field"><span class="value">WSI Freight Forwarding SA de CV</span></div>
+          <div class="inv-field"><span class="label">RFC:</span> <span class="value">WSI910215X43</span></div>
+        </div>
+
+        <div class="inv-section">
+          <div class="inv-section-title">Shipment Reference</div>
+          <div class="inv-field"><span class="label">HBL:</span><span class="value">WSI20260312</span></div>
+          <div class="inv-field"><span class="label">MBL:</span><span class="value">MSCU8234567890</span></div>
+          <div class="inv-field"><span class="label">Container:</span><span class="value">MSCU1234567</span></div>
+          <div class="inv-field"><span class="label">Vessel:</span><span class="value">MSC GULSUN</span></div>
+        </div>
+
+        <div class="inv-line-items">
+          <div class="inv-line-header">
+            <div class="col-desc">Description</div>
+            <div class="col-qty">Qty</div>
+            <div class="col-price">Unit</div>
+            <div class="col-total">Total</div>
+          </div>
+          <div class="inv-line-row">
+            <div class="col-desc">Ocean Freight FCL 40HC</div>
+            <div class="col-qty">1</div>
+            <div class="col-price">$2,200.00</div>
+            <div class="col-total">$2,200.00</div>
+          </div>
+          <div class="inv-line-row">
+            <div class="col-desc">Documentation Fee</div>
+            <div class="col-qty">1</div>
+            <div class="col-price">$150.00</div>
+            <div class="col-total">$150.00</div>
+          </div>
+          <div class="inv-line-row">
+            <div class="col-desc">Inland Drayage</div>
+            <div class="col-qty">1</div>
+            <div class="col-price">$150.00</div>
+            <div class="col-total">$150.00</div>
+          </div>
+        </div>
+
+        <div class="inv-totals">
+          <div class="inv-total-row"><span>Subtotal</span><span>$2,500.00 USD</span></div>
+          <div class="inv-total-row"><span>IVA 16%</span><span>$380.00 USD</span></div>
+          <div class="inv-total-row final"><span>TOTAL</span><span>$2,880.00 USD</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pdf-nav">
+      <button class="pdf-nav-btn">← Prev</button>
+      <span class="pdf-page-info">Page 1 of 1</span>
+      <button class="pdf-nav-btn">Next →</button>
+    </div>
+  </div>
+
+  <!-- DATA PANEL -->
+  <div class="data-panel">
+    <div class="data-inner">
+
+      <!-- SAT VALIDATION CARD -->
+      <div class="d-card">
+        <div class="d-card-header">
+          <div class="d-card-title"><span class="d-card-icon">🇲🇽</span> SAT Validation (CFDI 4.0)</div>
+          <button style="padding:4px 10px;background:var(--primary-50);border:1px solid #86efac;border-radius:6px;color:var(--primary);font-size:11px;font-weight:600;cursor:pointer;">View XML →</button>
+        </div>
+        <div class="d-card-body" style="padding-top:8px;">
+          <div class="sat-check">
+            <div class="sat-status-icon ok">✓</div>
+            <div class="sat-check-label">Factura found in SAT system</div>
+            <div class="sat-check-value">Vigente</div>
+          </div>
+          <div class="sat-check">
+            <div class="sat-status-icon ok">✓</div>
+            <div class="sat-check-label">Status: Vigente (Active)</div>
+          </div>
+          <div class="sat-check">
+            <div class="sat-status-icon ok">✓</div>
+            <div class="sat-check-label">UUID Matches</div>
+            <div class="sat-check-value" style="font-family:'JetBrains Mono',monospace;font-size:10px;">550e8400-e29b...</div>
+          </div>
+          <div class="sat-check">
+            <div class="sat-status-icon ok">✓</div>
+            <div class="sat-check-label">Emisor RFC: ACME8501015JA</div>
+          </div>
+          <div class="sat-check">
+            <div class="sat-status-icon ok">✓</div>
+            <div class="sat-check-label">NOT on Lista Negra</div>
+          </div>
+          <div class="sat-check">
+            <div class="sat-status-icon warn">!</div>
+            <div class="sat-check-label">CFDI 3.3 — old version</div>
+            <div class="sat-check-value" style="color:var(--yellow);">Still valid</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- INVOICE INFO -->
+      <div class="d-card">
+        <div class="d-card-header">
+          <div class="d-card-title"><span class="d-card-icon">📄</span> Invoice Details</div>
+          <span style="font-size:11px;color:var(--gray-400)">AI extracted · hover to edit</span>
+        </div>
+        <div class="d-card-body" style="padding-top:4px;">
+          <div class="field-row">
+            <div class="field-label">Invoice Number</div>
+            <div class="field-value code">INV-2026-0312</div>
+            <button class="field-edit-btn">✏️ Edit</button>
+          </div>
+          <div class="field-row">
+            <div class="field-label">Invoice Date</div>
+            <div class="field-value">February 15, 2026</div>
+            <button class="field-edit-btn">✏️ Edit</button>
+          </div>
+          <div class="field-row">
+            <div class="field-label">Amount</div>
+            <div class="field-value" style="font-weight:700;color:var(--gray-900)">$2,880.00</div>
+            <span style="font-size:12px;color:var(--gray-500);margin-left:4px;">USD</span>
+            <button class="field-edit-btn">✏️ Edit</button>
+          </div>
+          <div class="field-row">
+            <div class="field-label">Tax Amount (IVA)</div>
+            <div class="field-value">$380.00</div>
+            <span class="variance-badge warn">15.2% — expected 16%</span>
+          </div>
+          <div class="field-row">
+            <div class="field-label">Vendor</div>
+            <div class="field-value">ACME Shipping SA de CV</div>
+          </div>
+          <div class="field-row">
+            <div class="field-label">Vendor RFC</div>
+            <div class="field-value code">ACME8501015JA</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SHIPMENT REFERENCES -->
+      <div class="d-card">
+        <div class="d-card-header">
+          <div class="d-card-title"><span class="d-card-icon">🚢</span> Shipment References</div>
+        </div>
+        <div class="d-card-body" style="padding-top:4px;">
+          <div class="cw-match">
+            <div class="cw-match-icon">✅</div>
+            <div class="cw-match-text">Matched to CW Consol: <strong>JK782341</strong> · Shipment: JS123456</div>
+            <div class="cw-match-link">Open in CW →</div>
+          </div>
+          <div class="field-row">
+            <div class="field-label">Master BL</div>
+            <div class="field-value code">MSCU8234567890</div>
+          </div>
+          <div class="field-row">
+            <div class="field-label">House BL</div>
+            <div class="field-value code">WSI20260312</div>
+          </div>
+          <div class="field-row">
+            <div class="field-label">Container</div>
+            <div class="field-value code">MSCU1234567</div>
+          </div>
+          <div class="field-row">
+            <div class="field-label">Vessel</div>
+            <div class="field-value">MSC GULSUN — Voyage 034W</div>
+          </div>
+          <div class="field-row">
+            <div class="field-label">ETD / ETA</div>
+            <div class="field-value">Jan 28, 2026 / Feb 20, 2026</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ERP MATCHING -->
+      <div class="d-card">
+        <div class="d-card-header">
+          <div class="d-card-title"><span class="d-card-icon">🔗</span> CargoWise ERP</div>
+        </div>
+        <div class="d-card-body" style="padding-top:4px;">
+          <div class="field-row">
+            <div class="field-label">Purchasing Party</div>
+            <div class="field-value">ACME Shipping <span style="font-size:11px;color:var(--gray-400)">Code: ACME</span></div>
+            <span class="variance-badge ok">Found ✓</span>
+          </div>
+          <div class="field-row">
+            <div class="field-label">Expected Cost</div>
+            <div class="field-value">$2,500.00 USD</div>
+          </div>
+          <div class="field-row">
+            <div class="field-label">Invoice Amount</div>
+            <div class="field-value" style="font-weight:700;">$2,880.00 USD</div>
+            <span class="variance-badge bad">+15.2% over</span>
+          </div>
+          <div class="field-row">
+            <div class="field-label">Duplicate Check</div>
+            <div class="field-value">Not found in AP</div>
+            <span class="variance-badge ok">Clear ✓</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- EXCEPTIONS -->
+      <div class="d-card">
+        <div class="d-card-header">
+          <div class="d-card-title"><span class="d-card-icon">⚠️</span> Exceptions (2)</div>
+          <div class="exc-count">
+            <span class="exc-badge block">1 Blocking</span>
+            <span class="exc-badge warn">1 Warning</span>
+          </div>
+        </div>
+        <div class="d-card-body">
+          <!-- Blocking exception -->
+          <div class="exc-item">
+            <div class="exc-item-header">
+              <div class="exc-sev block"></div>
+              <div class="exc-code">AMOUNT_TOLERANCE</div>
+              <div class="exc-msg">Invoice amount exceeds expected cost by 15.2%</div>
+              <div style="background:#fee2e2;color:#991b1b;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;">⛔ BLOCK</div>
+              <div class="exc-chevron">▼</div>
+            </div>
+            <div class="exc-body">
+              <div class="exc-detail">
+                Invoice: $2,880.00 USD<br>
+                Expected: $2,500.00 USD<br>
+                Variance: +$380.00 (+15.2%)<br>
+                Threshold: 10% warn / 25% block
+              </div>
+              <div class="exc-action">
+                <button class="exc-resolve-btn">⚡ Override (Manager only)</button>
+                <button class="exc-resolve-btn" style="margin-left:8px">📝 Add Note</button>
+              </div>
+            </div>
+          </div>
+          <!-- Warning exception -->
+          <div class="exc-item">
+            <div class="exc-item-header">
+              <div class="exc-sev warn"></div>
+              <div class="exc-code">TAX_IVA</div>
+              <div class="exc-msg">IVA calculation appears to be 15.2% instead of 16%</div>
+              <div style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;">⚠ WARN</div>
+              <div class="exc-chevron">▶</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div><!-- /split-layout -->
+
+<!-- STICKY FOOTER -->
+<div class="action-footer">
+  <div class="footer-left">
+    <button class="btn-sm btn-outline">💬 Add Note</button>
+    <button class="btn-sm btn-outline">📎 Attach Document</button>
+    <button class="btn-sm btn-outline">🔄 Reprocess</button>
+  </div>
+  <div class="footer-right">
+    <button class="btn-lg btn-reject">✕ Reject Invoice</button>
+    <button class="btn-lg btn-approve" style="opacity:0.5;cursor:not-allowed;" title="Cannot approve — resolve blocking exceptions first">
+      ✓ Approve Invoice
+    </button>
+  </div>
+</div>
+
+<div class="screen-label"><div class="dot"></div>Screen 3 — Invoice Detail</div>
+
+<style>
+.pbar{position:fixed;bottom:0;left:0;right:0;height:54px;background:rgba(17,24,39,.97);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid rgba(255,255,255,.07);display:flex;align-items:center;padding:0 20px;gap:10px;z-index:99999;font-family:'Inter',sans-serif;}
+.pbtn{display:inline-flex;align-items:center;gap:6px;color:rgba(255,255,255,.65);font-size:12px;font-weight:500;text-decoration:none;padding:5px 12px;border-radius:6px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.09);white-space:nowrap;transition:all .15s;}
+.pbtn:hover{background:rgba(255,255,255,.13);color:#fff;text-decoration:none;}
+.pbtn.off{opacity:.2;pointer-events:none;}
+.pctr{flex:1;display:flex;align-items:center;justify-content:center;gap:10px;}
+.pflw{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#86efac;background:rgba(22,163,74,.14);border:1px solid rgba(22,163,74,.22);padding:2px 9px;border-radius:10px;}
+.ptit{font-size:13px;font-weight:600;color:#fff;font-family:'Outfit',sans-serif;}
+.pnum{font-size:11px;color:rgba(255,255,255,.28);}
+.pmapbtn{width:32px;height:32px;border-radius:6px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.09);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.4);flex-shrink:0;}
+.pmapbtn:hover{background:rgba(255,255,255,.13);color:#fff;}
+.pkeys{display:flex;align-items:center;gap:4px;font-size:10px;color:rgba(255,255,255,.18);margin-left:4px;}
+.pkey{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:3px;padding:1px 5px;font-family:monospace;}
+.pmap{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);z-index:100000;padding:36px 40px;overflow-y:auto;}
+.pmap.on{display:block;}
+.pmhd{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;}
+.pmhd h2{font-family:'Outfit',sans-serif;font-weight:700;font-size:22px;color:#fff;margin:0;}
+.pmcls{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:rgba(255,255,255,.6);cursor:pointer;font-size:20px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;}
+.pmcls:hover{background:rgba(255,255,255,.15);color:#fff;}
+.pmgrp{margin-bottom:18px;}
+.pmgl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.28);margin-bottom:7px;}
+.pmscrns{display:flex;flex-wrap:wrap;gap:5px;}
+.pmitem{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);border-radius:5px;text-decoration:none;font-size:11px;color:rgba(255,255,255,.55);transition:all .15s;font-family:'Inter',sans-serif;}
+.pmitem:hover{background:rgba(22,163,74,.18);border-color:rgba(22,163,74,.4);color:#fff;text-decoration:none;}
+.pmitem.cur{background:rgba(22,163,74,.2);border-color:#16a34a;color:#86efac;}
+.pmn{font-size:9px;color:rgba(255,255,255,.22);font-family:monospace;}
+</style>
+
+<nav class="pbar">
+  <a class="pbtn" id="pp" href="08-ai-extraction.html">&#8592; AI Extraction</a>
+  <div class="pctr">
+    <span class="pflw">Invoices</span>
+    <span class="ptit">Invoice Detail</span>
+    <span class="pnum">#11</span>
+    <div class="pmapbtn" onclick="document.getElementById('pmo').classList.toggle('on')" title="Screen map (M)">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    </div>
+    <div class="pkeys"><span class="pkey">&#8592;</span><span class="pkey">&#8594;</span><span style="margin-left:2px;">navigate</span><span class="pkey" style="margin-left:6px;">M</span><span>map</span></div>
+  </div>
+  <a class="pbtn" id="pn" href="04-sat-validation.html">SAT Validation &#8594;</a>
+</nav>
+
+<div class="pmap" id="pmo">
+  <div class="pmhd">
+    <h2>FacturaFlow — Screen Map</h2>
+    <div class="pmcls" onclick="document.getElementById('pmo').classList.remove('on')">&#x2715;</div>
+  </div>
+  <div class="pmgrp"><div class="pmgl">Onboarding</div><div class="pmscrns">
+<a class="pmitem" href="06-signup.html"><span class="pmn">01</span>Sign Up</a>
+<a class="pmitem" href="34-onboarding-checklist.html"><span class="pmn">02</span>Onboarding Checklist</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Authentication</div><div class="pmscrns">
+<a class="pmitem" href="09-login.html"><span class="pmn">03</span>Login</a>
+<a class="pmitem" href="10-forgot-password.html"><span class="pmn">04</span>Forgot Password</a>
+<a class="pmitem" href="11-tenant-switcher.html"><span class="pmn">05</span>Workspace Switcher</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Core App</div><div class="pmscrns">
+<a class="pmitem" href="01-dashboard.html"><span class="pmn">06</span>Dashboard</a>
+<a class="pmitem" href="25-audit-trail.html"><span class="pmn">17</span>Audit Trail</a>
+<a class="pmitem" href="26-suppliers.html"><span class="pmn">22</span>Suppliers</a>
+<a class="pmitem" href="27-reports.html"><span class="pmn">23</span>Reports</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Invoices</div><div class="pmscrns">
+<a class="pmitem" href="07-invoice-list.html"><span class="pmn">07</span>Invoice List</a>
+<a class="pmitem" href="02-invoice-upload.html"><span class="pmn">08</span>Upload Invoice</a>
+<a class="pmitem" href="28-bulk-upload.html"><span class="pmn">09</span>Bulk Upload</a>
+<a class="pmitem" href="08-ai-extraction.html"><span class="pmn">10</span>AI Extraction</a>
+<a class="pmitem cur" href="03-invoice-detail.html"><span class="pmn">11</span>Invoice Detail</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">SAT &amp; Compliance</div><div class="pmscrns">
+<a class="pmitem" href="04-sat-validation.html"><span class="pmn">12</span>SAT Validation</a>
+<a class="pmitem" href="19-sat-dashboard.html"><span class="pmn">18</span>SAT Dashboard</a>
+<a class="pmitem" href="20-lista-negra.html"><span class="pmn">19</span>Lista Negra</a>
+<a class="pmitem" href="21-rfc-directory.html"><span class="pmn">20</span>RFC Directory</a>
+<a class="pmitem" href="22-sat-settings.html"><span class="pmn">21</span>SAT Settings</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Exceptions</div><div class="pmscrns">
+<a class="pmitem" href="05-exception-queue.html"><span class="pmn">13</span>Exception Queue</a>
+<a class="pmitem" href="37-invoice-comparison.html"><span class="pmn">14</span>Invoice Comparison</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Approval</div><div class="pmscrns">
+<a class="pmitem" href="35-approval-request.html"><span class="pmn">15</span>Approval Request</a>
+<a class="pmitem" href="36-approval-chain.html"><span class="pmn">16</span>Approval Chain</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Workflows</div><div class="pmscrns">
+<a class="pmitem" href="23-workflow-list.html"><span class="pmn">24</span>Workflow List</a>
+<a class="pmitem" href="24-workflow-builder.html"><span class="pmn">25</span>Workflow Builder</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Settings</div><div class="pmscrns">
+<a class="pmitem" href="15-settings-profile.html"><span class="pmn">26</span>Profile</a>
+<a class="pmitem" href="16-settings-team.html"><span class="pmn">27</span>Team</a>
+<a class="pmitem" href="17-settings-integrations.html"><span class="pmn">28</span>Integrations</a>
+<a class="pmitem" href="18-settings-notifications.html"><span class="pmn">29</span>Notifications</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Developer</div><div class="pmscrns">
+<a class="pmitem" href="38-api-keys.html"><span class="pmn">30</span>API Keys</a>
+<a class="pmitem" href="39-webhooks.html"><span class="pmn">31</span>Webhooks</a>
+<a class="pmitem" href="40-global-search.html"><span class="pmn">32</span>Global Search</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Billing</div><div class="pmscrns">
+<a class="pmitem" href="12-billing-overview.html"><span class="pmn">33</span>Billing Overview</a>
+<a class="pmitem" href="13-upgrade-plan.html"><span class="pmn">34</span>Upgrade Plan</a>
+<a class="pmitem" href="14-payment-history.html"><span class="pmn">35</span>Payment History</a>
+<a class="pmitem" href="45-trial-expiry.html"><span class="pmn">36</span>Trial Expiry</a>
+<a class="pmitem" href="46-cancellation-flow.html"><span class="pmn">37</span>Cancellation</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Admin &amp; Ops</div><div class="pmscrns">
+<a class="pmitem" href="41-admin-tenants.html"><span class="pmn">38</span>Admin Tenants</a>
+<a class="pmitem" href="42-admin-impersonate.html"><span class="pmn">39</span>Impersonation</a>
+<a class="pmitem" href="43-cw-field-mapper.html"><span class="pmn">40</span>CW Field Mapper</a>
+<a class="pmitem" href="44-cw-sync-log.html"><span class="pmn">41</span>CW Sync Log</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Empty States</div><div class="pmscrns">
+<a class="pmitem" href="29-empty-invoices.html"><span class="pmn">42</span>Empty Invoices</a>
+<a class="pmitem" href="30-empty-exceptions.html"><span class="pmn">43</span>Empty Exceptions</a>
+<a class="pmitem" href="31-empty-suppliers.html"><span class="pmn">44</span>Empty Suppliers</a>
+<a class="pmitem" href="32-empty-reports.html"><span class="pmn">45</span>Empty Reports</a>
+<a class="pmitem" href="33-empty-workflows.html"><span class="pmn">46</span>Empty Workflows</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Mobile</div><div class="pmscrns">
+<a class="pmitem" href="47-mobile-dashboard.html"><span class="pmn">47</span>Mobile Dashboard</a>
+<a class="pmitem" href="48-mobile-invoice-detail.html"><span class="pmn">48</span>Mobile Invoice</a>
+<a class="pmitem" href="49-mobile-approve.html"><span class="pmn">49</span>Mobile Approve</a>
+</div></div>
+</div>
+
+<script>
+document.addEventListener('keydown',function(e){
+  var p=document.getElementById('pp'),n=document.getElementById('pn');
+  if(e.key==='ArrowLeft'&&p&&!p.classList.contains('off'))window.location.href=p.href;
+  if(e.key==='ArrowRight'&&n&&!n.classList.contains('off'))window.location.href=n.href;
+  if(e.key==='Escape')document.getElementById('pmo').classList.remove('on');
+  if(e.key.toLowerCase()==='m'&&document.activeElement.tagName!=='INPUT'&&document.activeElement.tagName!=='TEXTAREA')document.getElementById('pmo').classList.toggle('on');
+});
+</script>
+
+</body>
+</html>

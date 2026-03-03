@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FacturaFlow — Screen 1: Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+  :root {
+    --primary: #16a34a; --primary-dark: #15803d; --primary-light: #dcfce7; --primary-50: #f0fdf4;
+    --red: #ef4444; --red-light: #fee2e2;
+    --yellow: #f59e0b; --yellow-light: #fffbeb;
+    --blue: #3b82f6; --blue-light: #eff6ff;
+    --green: #22c55e;
+    --gray-900: #111827; --gray-800: #1f2937; --gray-700: #374151; --gray-600: #4b5563;
+    --gray-500: #6b7280; --gray-400: #9ca3af; --gray-300: #d1d5db;
+    --gray-200: #e5e7eb; --gray-100: #f3f4f6; --gray-50: #f9fafb;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Inter',sans-serif; background:var(--gray-50); color:var(--gray-900); font-size:14px; display:flex; min-height:100vh; }
+
+  /* ── SIDEBAR ── */
+  aside {
+    width: 220px;
+    background: white;
+    border-right: 1px solid var(--gray-200);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+  }
+  .logo {
+    padding: 20px 16px;
+    border-bottom: 1px solid var(--gray-100);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: var(--primary);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; color: white;
+  }
+  .logo-text { font-family:'Outfit',sans-serif; font-size:17px; font-weight:700; color:var(--gray-900); }
+  .logo-text span { color:var(--primary); }
+
+  nav { padding: 12px 8px; flex: 1; overflow-y: auto; }
+  .nav-group { margin-bottom: 20px; }
+  .nav-group-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--gray-400); padding: 4px 8px 8px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px; border-radius: 6px;
+    color: var(--gray-600); font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: all 0.15s; margin-bottom: 2px; text-decoration: none;
+  }
+  .nav-item:hover { background: var(--gray-50); color: var(--gray-900); }
+  .nav-item.active { background: var(--primary-50); color: var(--primary); }
+  .nav-item .icon { width: 18px; height: 18px; flex-shrink: 0; }
+  .nav-item .badge-count {
+    margin-left: auto; background: var(--red); color: white;
+    font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 99px;
+  }
+
+  .sidebar-bottom {
+    padding: 12px 8px;
+    border-top: 1px solid var(--gray-100);
+  }
+  .user-card {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px; border-radius: 8px;
+    background: var(--gray-50); cursor: pointer;
+  }
+  .user-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--primary); color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; flex-shrink: 0;
+  }
+  .user-name { font-size: 13px; font-weight: 600; color: var(--gray-900); }
+  .user-role { font-size: 11px; color: var(--gray-500); }
+
+  /* ── MAIN ── */
+  main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    background: white; border-bottom: 1px solid var(--gray-200);
+    padding: 0 24px; height: 56px;
+    display: flex; align-items: center; gap: 16px;
+    flex-shrink: 0;
+  }
+  .topbar-title { font-family:'Outfit',sans-serif; font-size:18px; font-weight:700; color:var(--gray-900); flex: 1; }
+  .search-bar {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--gray-50); border: 1px solid var(--gray-200);
+    border-radius: 8px; padding: 6px 12px; width: 240px;
+    color: var(--gray-500); font-size: 13px;
+  }
+  .search-bar svg { width:14px; height:14px; flex-shrink:0; }
+  .topbar-actions { display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    width: 36px; height: 36px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: var(--gray-500); background: transparent;
+    border: none; position: relative; transition: all 0.15s;
+  }
+  .icon-btn:hover { background: var(--gray-100); }
+  .notif-dot {
+    position: absolute; top: 7px; right: 7px;
+    width: 8px; height: 8px; background: var(--red); border-radius: 50%;
+    border: 2px solid white;
+  }
+  .btn-primary {
+    background: var(--primary); color: white;
+    border: none; border-radius: 8px; padding: 8px 16px;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+    transition: background 0.15s;
+  }
+  .btn-primary:hover { background: var(--primary-dark); }
+
+  /* ── CONTENT ── */
+  .content { flex: 1; overflow-y: auto; padding: 24px; }
+
+  /* ── DATE RANGE BAR ── */
+  .filter-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .filter-bar h2 { font-family:'Outfit',sans-serif; font-size:15px; font-weight:600; color:var(--gray-700); }
+  .date-tabs { display: flex; gap: 4px; background: var(--gray-100); border-radius: 8px; padding: 3px; }
+  .date-tab {
+    padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 500;
+    color: var(--gray-500); cursor: pointer; transition: all 0.15s;
+  }
+  .date-tab.active { background: white; color: var(--gray-900); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+
+  /* ── KPI CARDS ── */
+  .kpi-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 24px; }
+  .kpi-card {
+    background: white; border: 1px solid var(--gray-200); border-radius: 12px;
+    padding: 20px; transition: all 0.2s;
+  }
+  .kpi-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); transform: translateY(-1px); }
+  .kpi-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
+  .kpi-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+  .kpi-icon.blue { background: #dbeafe; }
+  .kpi-icon.red { background: #fee2e2; }
+  .kpi-icon.green { background: #dcfce7; }
+  .kpi-icon.yellow { background: #fef3c7; }
+  .kpi-trend {
+    display: flex; align-items: center; gap: 3px;
+    font-size: 11px; font-weight: 600; padding: 3px 7px; border-radius: 99px;
+  }
+  .kpi-trend.up { background: #dcfce7; color: #166534; }
+  .kpi-trend.down { background: #fee2e2; color: #991b1b; }
+  .kpi-value { font-family:'Outfit',sans-serif; font-size:32px; font-weight:800; margin-bottom:4px; line-height:1; }
+  .kpi-label { font-size:12px; color:var(--gray-500); margin-bottom:2px; }
+  .kpi-sub { font-size:12px; color:var(--gray-600); font-weight:500; }
+  .kpi-progress { margin-top:12px; }
+  .progress-bar { height: 4px; background: var(--gray-200); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 99px; transition: width 1s ease; }
+
+  /* ── CHARTS ROW ── */
+  .charts-row { display: grid; grid-template-columns: 1fr 360px; gap: 16px; margin-bottom: 24px; }
+  .chart-card { background: white; border: 1px solid var(--gray-200); border-radius: 12px; padding: 20px; }
+  .chart-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .chart-title { font-family:'Outfit',sans-serif; font-size:15px; font-weight:600; color:var(--gray-900); }
+  .chart-subtitle { font-size:12px; color:var(--gray-500); margin-top:2px; }
+
+  /* ── SPARKLINE CHART ── */
+  .sparkline-wrap { position: relative; height: 160px; }
+  .sparkline-svg { width: 100%; height: 100%; }
+  .chart-y-labels { display: flex; flex-direction: column; justify-content: space-between; height: 140px; padding: 8px 0; }
+  .chart-y-label { font-size: 10px; color: var(--gray-400); }
+
+  /* ── DONUT CHART ── */
+  .donut-wrap { display: flex; align-items: center; gap: 20px; padding: 8px 0; }
+  .donut-svg-wrap { flex-shrink: 0; }
+  .donut-legend { flex: 1; }
+  .donut-item { display: flex; align-items: center; gap: 8px; padding: 5px 0; }
+  .donut-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .donut-label { font-size: 12px; color: var(--gray-700); flex: 1; }
+  .donut-val { font-size: 12px; font-weight: 600; color: var(--gray-900); }
+
+  /* ── BOTTOM ROW ── */
+  .bottom-row { display: grid; grid-template-columns: 1fr 280px; gap: 16px; }
+
+  /* ── ACTIVITY FEED ── */
+  .activity-feed { background: white; border: 1px solid var(--gray-200); border-radius: 12px; padding: 20px; }
+  .activity-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--gray-50); }
+  .activity-item:last-child { border-bottom: none; }
+  .activity-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; flex-shrink: 0;
+  }
+  .activity-icon.success { background: #dcfce7; }
+  .activity-icon.warning { background: #fef3c7; }
+  .activity-icon.error { background: #fee2e2; }
+  .activity-body { flex: 1; min-width: 0; }
+  .activity-text { font-size: 13px; color: var(--gray-700); line-height: 1.4; }
+  .activity-text strong { color: var(--gray-900); }
+  .activity-time { font-size: 11px; color: var(--gray-400); margin-top: 2px; }
+  .view-all { text-align: center; padding-top: 8px; }
+  .view-all a { font-size: 12px; color: var(--primary); text-decoration: none; font-weight: 500; }
+
+  /* ── QUICK ACTIONS ── */
+  .quick-actions { background: white; border: 1px solid var(--gray-200); border-radius: 12px; padding: 20px; }
+  .qa-title { font-family:'Outfit',sans-serif; font-size:15px; font-weight:600; margin-bottom:16px; color:var(--gray-900); }
+  .qa-btn {
+    display: flex; align-items: center; gap: 10px;
+    width: 100%; padding: 12px 14px; border-radius: 8px;
+    border: 1px solid var(--gray-200); background: white;
+    cursor: pointer; margin-bottom: 10px; text-align: left;
+    transition: all 0.15s;
+  }
+  .qa-btn:hover { background: var(--gray-50); border-color: var(--gray-300); }
+  .qa-btn.primary { background: var(--primary); border-color: var(--primary); color: white; }
+  .qa-btn.primary:hover { background: var(--primary-dark); }
+  .qa-btn.danger { background: #fef2f2; border-color: #fecaca; }
+  .qa-btn-icon { font-size: 18px; }
+  .qa-btn-text .title { font-size: 13px; font-weight: 600; }
+  .qa-btn-text .sub { font-size: 11px; color: var(--gray-500); margin-top: 1px; }
+  .qa-btn.primary .qa-btn-text .sub { color: rgba(255,255,255,0.7); }
+  .qa-btn.danger .qa-btn-text .title { color: var(--red); }
+  .qa-btn-badge { margin-left: auto; background: var(--red); color: white; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 99px; }
+
+  /* ── SCREEN LABEL ── */
+  .screen-label {
+    position: fixed; bottom: 16px; right: 16px;
+    background: var(--gray-800); color: white;
+    font-size: 11px; padding: 6px 12px; border-radius: 99px;
+    display: flex; align-items: center; gap: 6px; z-index: 100;
+  }
+  .screen-label .dot { width: 6px; height: 6px; background: var(--primary); border-radius: 50%; }
+</style>
+</head>
+<body style="padding-bottom:54px">
+
+<!-- SIDEBAR -->
+<aside>
+  <div class="logo">
+    <div class="logo-icon">📄</div>
+    <div class="logo-text">Factura<span>Flow</span></div>
+  </div>
+  <nav>
+    <div class="nav-group">
+      <div class="nav-group-label">Main</div>
+      <a class="nav-item active" href="#">
+        <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Dashboard
+      </a>
+      <a class="nav-item" href="#">
+        <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        Invoices
+      </a>
+      <a class="nav-item" href="#">
+        <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        Exceptions
+        <span class="badge-count">7</span>
+      </a>
+      <a class="nav-item" href="#">
+        <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0"/></svg>
+        Suppliers
+      </a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Automation</div>
+      <a class="nav-item" href="#">
+        <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M4 4h16v2H4zM4 11h16v2H4zM4 18h10v2H4z"/></svg>
+        Workflows
+      </a>
+      <a class="nav-item" href="#">
+        <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        Reports
+      </a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Account</div>
+      <a class="nav-item" href="#">
+        <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        Settings
+      </a>
+    </div>
+  </nav>
+  <div class="sidebar-bottom">
+    <div class="user-card">
+      <div class="user-avatar">MC</div>
+      <div>
+        <div class="user-name">María C.</div>
+        <div class="user-role">AP Manager</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main>
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-title">Dashboard</div>
+    <div class="search-bar">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      Search invoices, vendors...
+    </div>
+    <div class="topbar-actions">
+      <button class="icon-btn">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+        <div class="notif-dot"></div>
+      </button>
+      <button class="btn-primary">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+        Upload Invoice
+      </button>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+    <!-- FILTER BAR -->
+    <div class="filter-bar">
+      <div>
+        <h2>Overview</h2>
+        <div style="font-size:12px;color:var(--gray-500);margin-top:2px;">Last updated 2 minutes ago</div>
+      </div>
+      <div class="date-tabs">
+        <div class="date-tab">7 days</div>
+        <div class="date-tab active">30 days</div>
+        <div class="date-tab">90 days</div>
+        <div class="date-tab">Custom</div>
+      </div>
+    </div>
+
+    <!-- KPI CARDS -->
+    <div class="kpi-row">
+      <!-- Pending -->
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <div class="kpi-icon blue">⏳</div>
+          <div class="kpi-trend up">↑ 12%</div>
+        </div>
+        <div class="kpi-value" style="color:var(--blue)">34</div>
+        <div class="kpi-label">Pending Invoices</div>
+        <div class="kpi-sub">$45,230 MXN total</div>
+      </div>
+      <!-- Blocked -->
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <div class="kpi-icon red">⚠️</div>
+          <div class="kpi-trend down">↑ 3</div>
+        </div>
+        <div class="kpi-value" style="color:var(--red)">7</div>
+        <div class="kpi-label">Blocked Invoices</div>
+        <div class="kpi-sub" style="color:var(--red);font-weight:600;">Require attention</div>
+      </div>
+      <!-- Processed -->
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <div class="kpi-icon green">✅</div>
+          <div class="kpi-trend up">↑ 8%</div>
+        </div>
+        <div class="kpi-value" style="color:var(--green)">128</div>
+        <div class="kpi-label">Processed This Month</div>
+        <div class="kpi-sub">$312,450 MXN total</div>
+      </div>
+      <!-- Avg Time -->
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <div class="kpi-icon yellow">⚡</div>
+          <div style="font-size:11px;color:var(--gray-500)">Target: 24h</div>
+        </div>
+        <div class="kpi-value" style="color:var(--yellow)">4.2h</div>
+        <div class="kpi-label">Avg Processing Time</div>
+        <div class="kpi-progress">
+          <div class="progress-bar">
+            <div class="progress-fill" style="width:18%;background:var(--green)"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHARTS ROW -->
+    <div class="charts-row">
+      <!-- Line Chart -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Invoice Volume</div>
+            <div class="chart-subtitle">Last 30 days — invoices processed daily</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;">
+          <div class="chart-y-labels">
+            <span class="chart-y-label">20</span>
+            <span class="chart-y-label">15</span>
+            <span class="chart-y-label">10</span>
+            <span class="chart-y-label">5</span>
+            <span class="chart-y-label">0</span>
+          </div>
+          <div class="sparkline-wrap" style="flex:1;">
+            <svg viewBox="0 0 600 140" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
+              <defs>
+                <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#16a34a" stop-opacity="0.3"/>
+                  <stop offset="100%" stop-color="#16a34a" stop-opacity="0.02"/>
+                </linearGradient>
+              </defs>
+              <!-- Grid lines -->
+              <line x1="0" y1="0" x2="600" y2="0" stroke="#f3f4f6" stroke-width="1"/>
+              <line x1="0" y1="35" x2="600" y2="35" stroke="#f3f4f6" stroke-width="1"/>
+              <line x1="0" y1="70" x2="600" y2="70" stroke="#f3f4f6" stroke-width="1"/>
+              <line x1="0" y1="105" x2="600" y2="105" stroke="#f3f4f6" stroke-width="1"/>
+              <line x1="0" y1="140" x2="600" y2="140" stroke="#f3f4f6" stroke-width="1"/>
+              <!-- Area fill -->
+              <path d="M0,105 L20,98 L40,91 L60,112 L80,98 L100,84 L120,77 L140,70 L160,84 L180,63 L200,56 L220,70 L240,49 L260,63 L280,42 L300,56 L320,35 L340,42 L360,28 L380,35 L400,21 L420,28 L440,14 L460,21 L480,28 L500,14 L520,21 L540,7 L560,14 L580,14 L600,21 L600,140 L0,140 Z" fill="url(#areaGrad)"/>
+              <!-- Line -->
+              <path d="M0,105 L20,98 L40,91 L60,112 L80,98 L100,84 L120,77 L140,70 L160,84 L180,63 L200,56 L220,70 L240,49 L260,63 L280,42 L300,56 L320,35 L340,42 L360,28 L380,35 L400,21 L420,28 L440,14 L460,21 L480,28 L500,14 L520,21 L540,7 L560,14 L580,14 L600,21" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <!-- Dots on key points -->
+              <circle cx="440" cy="14" r="4" fill="#16a34a"/>
+              <circle cx="540" cy="7" r="5" fill="#16a34a" stroke="white" stroke-width="2"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Donut Chart -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Exceptions</div>
+            <div class="chart-subtitle">By type this month</div>
+          </div>
+        </div>
+        <div class="donut-wrap">
+          <div class="donut-svg-wrap">
+            <svg width="120" height="120" viewBox="0 0 120 120">
+              <!-- Background circle -->
+              <circle cx="60" cy="60" r="48" fill="none" stroke="#f3f4f6" stroke-width="16"/>
+              <!-- SAT Failed - red 35% = 105.5deg -->
+              <circle cx="60" cy="60" r="48" fill="none" stroke="#ef4444" stroke-width="16" stroke-dasharray="105.5 195.5" stroke-dashoffset="0" transform="rotate(-90 60 60)"/>
+              <!-- Duplicate AP - orange 20% = 60.3deg, starts at 105.5 -->
+              <circle cx="60" cy="60" r="48" fill="none" stroke="#f97316" stroke-width="16" stroke-dasharray="60.3 240.7" stroke-dashoffset="-105.5" transform="rotate(-90 60 60)"/>
+              <!-- Amount Var - yellow 25% = 75.4deg, starts at 165.8 -->
+              <circle cx="60" cy="60" r="48" fill="none" stroke="#f59e0b" stroke-width="16" stroke-dasharray="75.4 225.6" stroke-dashoffset="-165.8" transform="rotate(-90 60 60)"/>
+              <!-- Lista Negra - dark red 10% = 30.2 starts at 241.2 -->
+              <circle cx="60" cy="60" r="48" fill="none" stroke="#dc2626" stroke-width="16" stroke-dasharray="30.2 270.8" stroke-dashoffset="-241.2" transform="rotate(-90 60 60)"/>
+              <!-- Other - blue 10% -->
+              <circle cx="60" cy="60" r="48" fill="none" stroke="#3b82f6" stroke-width="16" stroke-dasharray="30.2 270.8" stroke-dashoffset="-271.4" transform="rotate(-90 60 60)"/>
+              <!-- Center text -->
+              <text x="60" y="55" text-anchor="middle" font-family="Outfit" font-size="18" font-weight="800" fill="#111827">47</text>
+              <text x="60" y="68" text-anchor="middle" font-family="Inter" font-size="9" fill="#6b7280">exceptions</text>
+            </svg>
+          </div>
+          <div class="donut-legend">
+            <div class="donut-item"><div class="donut-dot" style="background:#ef4444"></div><div class="donut-label">SAT Validation</div><div class="donut-val">35%</div></div>
+            <div class="donut-item"><div class="donut-dot" style="background:#f97316"></div><div class="donut-label">Duplicate AP</div><div class="donut-val">20%</div></div>
+            <div class="donut-item"><div class="donut-dot" style="background:#f59e0b"></div><div class="donut-label">Amount Variance</div><div class="donut-val">25%</div></div>
+            <div class="donut-item"><div class="donut-dot" style="background:#dc2626"></div><div class="donut-label">Lista Negra</div><div class="donut-val">10%</div></div>
+            <div class="donut-item"><div class="donut-dot" style="background:#3b82f6"></div><div class="donut-label">Other</div><div class="donut-val">10%</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTTOM ROW -->
+    <div class="bottom-row">
+      <!-- Activity Feed -->
+      <div class="activity-feed">
+        <div class="chart-header" style="margin-bottom:8px;">
+          <div class="chart-title">Recent Activity</div>
+          <div style="font-size:12px;color:var(--primary);cursor:pointer;font-weight:500;">View all →</div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-icon success">✅</div>
+          <div class="activity-body">
+            <div class="activity-text"><strong>Invoice WSI-2026-0312</strong> approved by María Contreras</div>
+            <div class="activity-time">2 minutes ago · $2,500.00 USD</div>
+          </div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-icon error">⛔</div>
+          <div class="activity-body">
+            <div class="activity-text"><strong>Invoice ACME-INV-884</strong> blocked — Duplicate detected in CargoWise</div>
+            <div class="activity-time">15 minutes ago · $1,200.00 MXN</div>
+          </div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-icon warning">⚠️</div>
+          <div class="activity-body">
+            <div class="activity-text"><strong>Invoice MSC-2026-011</strong> processing with 2 warnings (IVA + currency)</div>
+            <div class="activity-time">32 minutes ago · $8,750.00 USD</div>
+          </div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-icon success">✅</div>
+          <div class="activity-body">
+            <div class="activity-text"><strong>Invoice ONE-001-2026</strong> SAT validation passed — Vigente</div>
+            <div class="activity-time">1 hour ago · $3,100.00 USD</div>
+          </div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-icon error">⛔</div>
+          <div class="activity-body">
+            <div class="activity-text"><strong>Proveedor GLOBAL-LOG SA</strong> found on Lista Negra (Definitivo)</div>
+            <div class="activity-time">2 hours ago</div>
+          </div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-icon success">✅</div>
+          <div class="activity-body">
+            <div class="activity-text"><strong>Invoice ZIM-24601</strong> approved and queued for payment</div>
+            <div class="activity-time">3 hours ago · $5,900.00 USD</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="quick-actions">
+        <div class="qa-title">Quick Actions</div>
+        <button class="qa-btn primary">
+          <div class="qa-btn-icon">📤</div>
+          <div class="qa-btn-text">
+            <div class="title">Upload Invoice</div>
+            <div class="sub">PDF + XML accepted</div>
+          </div>
+        </button>
+        <button class="qa-btn danger">
+          <div class="qa-btn-icon">🚨</div>
+          <div class="qa-btn-text">
+            <div class="title">Review Blocked</div>
+            <div class="sub">7 invoices blocked</div>
+          </div>
+          <div class="qa-btn-badge">7</div>
+        </button>
+        <button class="qa-btn">
+          <div class="qa-btn-icon">📊</div>
+          <div class="qa-btn-text">
+            <div class="title" style="color:var(--gray-900)">Download Report</div>
+            <div class="sub">Export to Excel/PDF</div>
+          </div>
+        </button>
+        <button class="qa-btn">
+          <div class="qa-btn-icon">🔍</div>
+          <div class="qa-btn-text">
+            <div class="title" style="color:var(--gray-900)">SAT Lookup</div>
+            <div class="sub">Validate a UUID</div>
+          </div>
+        </button>
+
+        <!-- Trial banner -->
+        <div style="margin-top:16px;padding:12px;background:#eff6ff;border-radius:8px;border:1px solid #bfdbfe;">
+          <div style="font-size:12px;font-weight:700;color:#1d4ed8;margin-bottom:4px;">✨ Professional Trial</div>
+          <div style="font-size:11px;color:#1e40af;margin-bottom:8px;">11 days remaining in trial</div>
+          <div style="height:4px;background:#dbeafe;border-radius:99px;margin-bottom:8px;"><div style="height:100%;width:21%;background:var(--blue);border-radius:99px;"></div></div>
+          <button style="width:100%;padding:7px;background:var(--blue);color:white;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">Upgrade Now</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="screen-label">
+  <div class="dot"></div>
+  Screen 1 — Dashboard
+</div>
+
+<!-- FF PROTO NAV -->
+<style>
+.pbar{position:fixed;bottom:0;left:0;right:0;height:54px;background:rgba(17,24,39,.97);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid rgba(255,255,255,.07);display:flex;align-items:center;padding:0 20px;gap:10px;z-index:99999;font-family:'Inter',sans-serif;}
+.pbtn{display:inline-flex;align-items:center;gap:6px;color:rgba(255,255,255,.65);font-size:12px;font-weight:500;text-decoration:none;padding:5px 12px;border-radius:6px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.09);white-space:nowrap;transition:all .15s;}
+.pbtn:hover{background:rgba(255,255,255,.13);color:#fff;text-decoration:none;}
+.pbtn.off{opacity:.2;pointer-events:none;}
+.pctr{flex:1;display:flex;align-items:center;justify-content:center;gap:10px;}
+.pflw{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#86efac;background:rgba(22,163,74,.14);border:1px solid rgba(22,163,74,.22);padding:2px 9px;border-radius:10px;}
+.ptit{font-size:13px;font-weight:600;color:#fff;font-family:'Outfit',sans-serif;}
+.pnum{font-size:11px;color:rgba(255,255,255,.28);}
+.pmapbtn{width:32px;height:32px;border-radius:6px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.09);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.4);flex-shrink:0;}
+.pmapbtn:hover{background:rgba(255,255,255,.13);color:#fff;}
+.pkeys{display:flex;align-items:center;gap:4px;font-size:10px;color:rgba(255,255,255,.18);margin-left:4px;}
+.pkey{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:3px;padding:1px 5px;font-family:monospace;}
+.pmap{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);z-index:100000;padding:36px 40px;overflow-y:auto;}
+.pmap.on{display:block;}
+.pmhd{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;}
+.pmhd h2{font-family:'Outfit',sans-serif;font-weight:700;font-size:22px;color:#fff;margin:0;}
+.pmcls{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:rgba(255,255,255,.6);cursor:pointer;font-size:20px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;}
+.pmcls:hover{background:rgba(255,255,255,.15);color:#fff;}
+.pmgrp{margin-bottom:18px;}
+.pmgl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.28);margin-bottom:7px;}
+.pmscrns{display:flex;flex-wrap:wrap;gap:5px;}
+.pmitem{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);border-radius:5px;text-decoration:none;font-size:11px;color:rgba(255,255,255,.55);transition:all .15s;font-family:'Inter',sans-serif;}
+.pmitem:hover{background:rgba(22,163,74,.18);border-color:rgba(22,163,74,.4);color:#fff;text-decoration:none;}
+.pmitem.cur{background:rgba(22,163,74,.2);border-color:#16a34a;color:#86efac;}
+.pmn{font-size:9px;color:rgba(255,255,255,.22);font-family:monospace;}
+</style>
+<div class="pbar">
+  <div style="display:flex;align-items:center;min-width:160px;">
+    <a class="pbtn" id="pp" href="11-tenant-switcher.html">
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg>
+      Workspace Switcher
+    </a>
+  </div>
+  <div class="pctr">
+    <span class="pflw">Core App</span>
+    <span class="ptit">Dashboard</span>
+    <span class="pnum">06 / 49</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:6px;min-width:160px;justify-content:flex-end;">
+    <a class="pbtn" id="pn" href="07-invoice-list.html">
+      Invoice List
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+    </a>
+    <button class="pmapbtn" onclick="document.getElementById('pmo').classList.toggle('on')" title="Screen map (M)">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    </button>
+    <div class="pkeys"><span class="pkey">&#8592;</span><span class="pkey">&#8594;</span><span style="margin-left:3px"><span class="pkey">M</span> map</span></div>
+  </div>
+</div>
+<div class="pmap" id="pmo">
+  <div style="max-width:1100px;margin:0 auto;">
+    <div class="pmhd">
+      <h2>FacturaFlow &mdash; All 49 Screens</h2>
+      <button class="pmcls" onclick="document.getElementById('pmo').classList.remove('on')">&#x2715;</button>
+    </div>
+    <div class="pmgrp"><div class="pmgl">Onboarding</div><div class="pmscrns">
+<a class="pmitem" href="06-signup.html"><span class="pmn">01</span>Sign Up</a>
+<a class="pmitem" href="34-onboarding-checklist.html"><span class="pmn">02</span>Onboarding Checklist</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Authentication</div><div class="pmscrns">
+<a class="pmitem" href="09-login.html"><span class="pmn">03</span>Login</a>
+<a class="pmitem" href="10-forgot-password.html"><span class="pmn">04</span>Forgot Password</a>
+<a class="pmitem" href="11-tenant-switcher.html"><span class="pmn">05</span>Workspace Switcher</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Core App</div><div class="pmscrns">
+<a class="pmitem cur" href="01-dashboard.html"><span class="pmn">06</span>Dashboard</a>
+<a class="pmitem" href="25-audit-trail.html"><span class="pmn">17</span>Audit Trail</a>
+<a class="pmitem" href="26-suppliers.html"><span class="pmn">22</span>Suppliers</a>
+<a class="pmitem" href="27-reports.html"><span class="pmn">23</span>Reports</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Invoices</div><div class="pmscrns">
+<a class="pmitem" href="07-invoice-list.html"><span class="pmn">07</span>Invoice List</a>
+<a class="pmitem" href="02-invoice-upload.html"><span class="pmn">08</span>Upload Invoice</a>
+<a class="pmitem" href="28-bulk-upload.html"><span class="pmn">09</span>Bulk Upload</a>
+<a class="pmitem" href="08-ai-extraction.html"><span class="pmn">10</span>AI Extraction</a>
+<a class="pmitem" href="03-invoice-detail.html"><span class="pmn">11</span>Invoice Detail</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">SAT &amp; Compliance</div><div class="pmscrns">
+<a class="pmitem" href="04-sat-validation.html"><span class="pmn">12</span>SAT Validation</a>
+<a class="pmitem" href="19-sat-dashboard.html"><span class="pmn">18</span>SAT Dashboard</a>
+<a class="pmitem" href="20-lista-negra.html"><span class="pmn">19</span>Lista Negra</a>
+<a class="pmitem" href="21-rfc-directory.html"><span class="pmn">20</span>RFC Directory</a>
+<a class="pmitem" href="22-sat-settings.html"><span class="pmn">21</span>SAT Settings</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Exceptions</div><div class="pmscrns">
+<a class="pmitem" href="05-exception-queue.html"><span class="pmn">13</span>Exception Queue</a>
+<a class="pmitem" href="37-invoice-comparison.html"><span class="pmn">14</span>Invoice Comparison</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Approval</div><div class="pmscrns">
+<a class="pmitem" href="35-approval-request.html"><span class="pmn">15</span>Approval Request</a>
+<a class="pmitem" href="36-approval-chain.html"><span class="pmn">16</span>Approval Chain</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Workflows</div><div class="pmscrns">
+<a class="pmitem" href="23-workflow-list.html"><span class="pmn">24</span>Workflow List</a>
+<a class="pmitem" href="24-workflow-builder.html"><span class="pmn">25</span>Workflow Builder</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Settings</div><div class="pmscrns">
+<a class="pmitem" href="15-settings-profile.html"><span class="pmn">26</span>Profile</a>
+<a class="pmitem" href="16-settings-team.html"><span class="pmn">27</span>Team</a>
+<a class="pmitem" href="17-settings-integrations.html"><span class="pmn">28</span>Integrations</a>
+<a class="pmitem" href="18-settings-notifications.html"><span class="pmn">29</span>Notifications</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Developer</div><div class="pmscrns">
+<a class="pmitem" href="38-api-keys.html"><span class="pmn">30</span>API Keys</a>
+<a class="pmitem" href="39-webhooks.html"><span class="pmn">31</span>Webhooks</a>
+<a class="pmitem" href="40-global-search.html"><span class="pmn">32</span>Global Search</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Billing</div><div class="pmscrns">
+<a class="pmitem" href="12-billing-overview.html"><span class="pmn">33</span>Billing Overview</a>
+<a class="pmitem" href="13-upgrade-plan.html"><span class="pmn">34</span>Upgrade Plan</a>
+<a class="pmitem" href="14-payment-history.html"><span class="pmn">35</span>Payment History</a>
+<a class="pmitem" href="45-trial-expiry.html"><span class="pmn">36</span>Trial Expiry</a>
+<a class="pmitem" href="46-cancellation-flow.html"><span class="pmn">37</span>Cancellation</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Admin &amp; Ops</div><div class="pmscrns">
+<a class="pmitem" href="41-admin-tenants.html"><span class="pmn">38</span>Admin Tenants</a>
+<a class="pmitem" href="42-admin-impersonate.html"><span class="pmn">39</span>Impersonation</a>
+<a class="pmitem" href="43-cw-field-mapper.html"><span class="pmn">40</span>CW Field Mapper</a>
+<a class="pmitem" href="44-cw-sync-log.html"><span class="pmn">41</span>CW Sync Log</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Empty States</div><div class="pmscrns">
+<a class="pmitem" href="29-empty-invoices.html"><span class="pmn">42</span>Empty Invoices</a>
+<a class="pmitem" href="30-empty-exceptions.html"><span class="pmn">43</span>Empty Exceptions</a>
+<a class="pmitem" href="31-empty-suppliers.html"><span class="pmn">44</span>Empty Suppliers</a>
+<a class="pmitem" href="32-empty-reports.html"><span class="pmn">45</span>Empty Reports</a>
+<a class="pmitem" href="33-empty-workflows.html"><span class="pmn">46</span>Empty Workflows</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Mobile</div><div class="pmscrns">
+<a class="pmitem" href="47-mobile-dashboard.html"><span class="pmn">47</span>Mobile Dashboard</a>
+<a class="pmitem" href="48-mobile-invoice-detail.html"><span class="pmn">48</span>Mobile Invoice</a>
+<a class="pmitem" href="49-mobile-approve.html"><span class="pmn">49</span>Mobile Approve</a>
+</div></div>
+  </div>
+</div>
+<script>
+document.addEventListener('keydown',function(e){
+  var p=document.getElementById('pp'),n=document.getElementById('pn');
+  if(e.key==='ArrowLeft'&&p&&!p.classList.contains('off'))window.location.href=p.href;
+  if(e.key==='ArrowRight'&&n&&!n.classList.contains('off'))window.location.href=n.href;
+  if(e.key==='Escape')document.getElementById('pmo').classList.remove('on');
+  if(e.key.toLowerCase()==='m'&&document.activeElement.tagName!=='INPUT'&&document.activeElement.tagName!=='TEXTAREA')document.getElementById('pmo').classList.toggle('on');
+});
+</script>
+<!-- END FF PROTO NAV -->
+</body>
+</html>

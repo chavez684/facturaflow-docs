@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FacturaFlow — AI Extraction Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --green: #16a34a; --green-dark: #15803d; --green-light: #dcfce7; --green-mid: #86efac;
+    --red: #ef4444; --red-light: #fee2e2;
+    --yellow: #f59e0b; --yellow-light: #fef3c7; --yellow-mid: #fcd34d;
+    --blue: #3b82f6; --blue-light: #dbeafe;
+    --purple: #8b5cf6; --purple-light: #ede9fe;
+    --gray-50: #f9fafb; --gray-100: #f3f4f6; --gray-200: #e5e7eb;
+    --gray-400: #9ca3af; --gray-500: #6b7280;
+    --gray-600: #4b5563; --gray-700: #374151; --gray-800: #1f2937; --gray-900: #111827;
+    --white: #ffffff;
+  }
+  body { font-family: 'Inter', sans-serif; background: var(--gray-900); color: var(--gray-800); display: flex; flex-direction: column; height: 100vh; overflow: hidden; font-size: 14px; }
+
+  /* ── App Bar ── */
+  .appbar { height: 52px; background: var(--gray-800); border-bottom: 1px solid var(--gray-700); display: flex; align-items: center; padding: 0 16px; gap: 12px; flex-shrink: 0; }
+  .back-btn { display: flex; align-items: center; gap: 6px; color: var(--gray-400); font-size: 13px; cursor: pointer; padding: 5px 8px; border-radius: 6px; border: none; background: none; transition: color .15s; }
+  .back-btn:hover { color: white; }
+  .appbar-divider { width: 1px; height: 20px; background: var(--gray-600); }
+  .appbar-title { font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 15px; color: white; }
+  .appbar-inv { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--blue-light) !important; padding: 3px 8px; background: rgba(59,130,246,.15); border-radius: 5px; }
+  .appbar-spacer { flex: 1; }
+  .ai-badge { display: flex; align-items: center; gap: 6px; background: rgba(139,92,246,.15); border: 1px solid rgba(139,92,246,.3); border-radius: 8px; padding: 5px 12px; color: #c4b5fd; font-size: 12px; font-weight: 600; }
+  .ai-badge svg { width: 14px; height: 14px; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 7px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid transparent; transition: all .15s; }
+  .btn-ghost-dark { background: rgba(255,255,255,.05); color: var(--gray-300); border-color: var(--gray-600); }
+  .btn-ghost-dark:hover { background: rgba(255,255,255,.1); color: white; }
+  .btn-confirm { background: var(--green); color: white; }
+  .btn-confirm:hover { background: var(--green-dark); }
+  .btn-reprocess { background: rgba(139,92,246,.2); color: #c4b5fd; border-color: rgba(139,92,246,.4); }
+
+  /* ── Progress Banner ── */
+  .progress-banner { background: var(--gray-800); border-bottom: 1px solid var(--gray-700); padding: 10px 16px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+  .progress-step { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+  .step-icon { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+  .step-icon.done { background: var(--green); color: white; }
+  .step-icon.active { background: rgba(139,92,246,.3); color: #c4b5fd; border: 2px solid #8b5cf6; font-size: 9px; }
+  .step-icon.pending { background: var(--gray-700); color: var(--gray-400); }
+  .step-label { color: var(--gray-400); }
+  .step-label.active { color: white; font-weight: 600; }
+  .step-label.done { color: var(--green-mid); }
+  .step-arrow { color: var(--gray-600); font-size: 12px; }
+  .progress-spacer { flex: 1; }
+  .overall-score { display: flex; align-items: center; gap: 8px; }
+  .score-label { font-size: 12px; color: var(--gray-400); }
+  .score-ring-wrap { position: relative; width: 36px; height: 36px; }
+  .score-val { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 12px; color: var(--green-mid); }
+  .confirm-all-btn { display: flex; align-items: center; gap: 5px; background: var(--green); color: white; border: none; border-radius: 7px; padding: 7px 14px; font-size: 12px; font-weight: 600; cursor: pointer; }
+
+  /* ── Main Content ── */
+  .main-content { flex: 1; display: flex; overflow: hidden; }
+
+  /* ── Left: PDF Panel ── */
+  .pdf-panel { width: 45%; background: #111827; display: flex; flex-direction: column; border-right: 1px solid var(--gray-700); overflow: hidden; flex-shrink: 0; }
+  .pdf-toolbar { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: var(--gray-800); border-bottom: 1px solid var(--gray-700); }
+  .pdf-tool-btn { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--gray-600); background: var(--gray-700); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--gray-300); transition: all .15s; }
+  .pdf-tool-btn:hover { background: var(--gray-600); color: white; }
+  .pdf-zoom { font-size: 12px; color: var(--gray-300); padding: 4px 8px; background: var(--gray-700); border: 1px solid var(--gray-600); border-radius: 5px; }
+  .pdf-spacer { flex: 1; }
+  .pdf-page-nav { font-size: 12px; color: var(--gray-400); display: flex; align-items: center; gap: 6px; }
+  .annotation-toggle { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--yellow-mid); background: rgba(245,158,11,.1); border: 1px solid rgba(245,158,11,.3); border-radius: 5px; padding: 3px 8px; cursor: pointer; }
+  .pdf-viewer { flex: 1; overflow: auto; padding: 20px; display: flex; justify-content: center; }
+  .pdf-page { width: 100%; max-width: 520px; background: white; border-radius: 4px; box-shadow: 0 8px 32px rgba(0,0,0,.5); padding: 32px 36px; position: relative; }
+
+  /* ── PDF Content (mock invoice) ── */
+  .invoice-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 2px solid #e5e7eb; }
+  .company-logo-mock { width: 80px; height: 32px; background: var(--green); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 12px; }
+  .invoice-meta { text-align: right; }
+  .invoice-meta h2 { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 18px; color: var(--gray-900); margin-bottom: 3px; }
+  .invoice-meta p { font-size: 11px; color: var(--gray-500); line-height: 1.6; }
+  .invoice-parties { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px; font-size: 11px; }
+  .party-block h4 { font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: .05em; color: var(--gray-400); margin-bottom: 4px; }
+  .party-block p { color: var(--gray-700); line-height: 1.6; }
+  .party-block p strong { color: var(--gray-900); }
+  .line-items { margin-bottom: 16px; }
+  .line-items table { width: 100%; border-collapse: collapse; font-size: 10px; }
+  .line-items th { background: var(--gray-50); padding: 5px 8px; text-align: left; font-weight: 600; color: var(--gray-500); border-bottom: 1px solid var(--gray-200); text-transform: uppercase; letter-spacing: .04em; }
+  .line-items td { padding: 6px 8px; border-bottom: 1px solid var(--gray-100); color: var(--gray-700); }
+  .line-items td:last-child { text-align: right; font-weight: 600; }
+  .totals { margin-left: auto; width: 200px; font-size: 11px; }
+  .total-row { display: flex; justify-content: space-between; padding: 3px 0; color: var(--gray-600); }
+  .total-row.grand { font-weight: 700; font-size: 13px; color: var(--gray-900); border-top: 2px solid var(--gray-200); padding-top: 6px; margin-top: 4px; }
+  .cfdi-footer { margin-top: 18px; padding-top: 12px; border-top: 1px dashed var(--gray-200); font-size: 9px; color: var(--gray-400); line-height: 1.6; }
+
+  /* ── Highlight Annotations on PDF ── */
+  .highlight { position: absolute; border: 2px solid; border-radius: 3px; pointer-events: none; }
+  .highlight.green { border-color: var(--green); background: rgba(22,163,74,.08); }
+  .highlight.yellow { border-color: var(--yellow); background: rgba(245,158,11,.1); }
+  .highlight.blue { border-color: var(--blue); background: rgba(59,130,246,.08); }
+  .highlight-label { position: absolute; top: -16px; left: 0; font-size: 8px; font-weight: 700; padding: 1px 5px; border-radius: 3px; white-space: nowrap; }
+  .highlight-label.green { background: var(--green); color: white; }
+  .highlight-label.yellow { background: var(--yellow); color: white; }
+  .highlight-label.blue { background: var(--blue); color: white; }
+
+  /* ── Right: Extraction Panel ── */
+  .extraction-panel { flex: 1; background: var(--gray-50); display: flex; flex-direction: column; overflow: hidden; }
+  .extraction-header { padding: 14px 20px; background: white; border-bottom: 1px solid var(--gray-200); display: flex; align-items: center; gap: 10px; }
+  .extraction-title { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 16px; color: var(--gray-900); }
+  .extraction-subtitle { font-size: 12px; color: var(--gray-500); margin-left: auto; }
+  .fields-scroll { flex: 1; overflow-y: auto; padding: 16px 20px; }
+
+  /* ── Field Groups ── */
+  .field-group { background: white; border: 1px solid var(--gray-200); border-radius: 12px; margin-bottom: 14px; overflow: hidden; }
+  .field-group-header { padding: 12px 16px; background: var(--gray-50); border-bottom: 1px solid var(--gray-100); display: flex; align-items: center; gap: 8px; }
+  .field-group-icon { width: 26px; height: 26px; border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .field-group-title { font-size: 13px; font-weight: 600; color: var(--gray-700); }
+  .field-group-score { margin-left: auto; display: flex; align-items: center; gap: 6px; font-size: 12px; }
+  .group-score-bar { width: 60px; height: 5px; border-radius: 3px; background: var(--gray-200); overflow: hidden; }
+  .group-score-fill { height: 100%; border-radius: 3px; }
+
+  /* ── Individual Field Rows ── */
+  .field-row { padding: 10px 16px; border-bottom: 1px solid var(--gray-100); display: flex; align-items: center; gap: 10px; transition: background .1s; cursor: pointer; }
+  .field-row:last-child { border-bottom: none; }
+  .field-row:hover { background: var(--gray-50); }
+  .field-row.low-conf { background: #fffbeb; }
+  .field-row.low-conf:hover { background: #fef3c7; }
+  .field-row.confirmed { }
+  .field-label { font-size: 11px; font-weight: 600; color: var(--gray-500); text-transform: uppercase; letter-spacing: .04em; width: 120px; flex-shrink: 0; }
+  .field-value-wrap { flex: 1; }
+  .field-value { font-size: 13px; font-weight: 500; color: var(--gray-800); margin-bottom: 1px; }
+  .field-value.mono { font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+  .field-source { font-size: 10px; color: var(--gray-400); }
+  .field-conf { display: flex; align-items: center; gap: 5px; flex-shrink: 0; width: 80px; }
+  .conf-bar { flex: 1; height: 4px; border-radius: 2px; background: var(--gray-200); overflow: hidden; }
+  .conf-fill { height: 100%; border-radius: 2px; }
+  .conf-val { font-size: 11px; font-weight: 600; width: 30px; text-align: right; flex-shrink: 0; }
+  .conf-val.high { color: var(--green); }
+  .conf-val.mid { color: #d97706; }
+  .conf-val.low { color: var(--red); }
+  .field-status { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid var(--gray-200); background: white; cursor: pointer; color: var(--gray-300); transition: all .15s; }
+  .field-status.confirmed { background: var(--green-light); border-color: var(--green-mid); color: var(--green); }
+  .field-status.needs-review { background: var(--yellow-light); border-color: var(--yellow-mid); color: #d97706; }
+  .field-status.error { background: var(--red-light); border-color: #fca5a5; color: var(--red); }
+  .field-edit { display: flex; flex-direction: column; gap: 4px; }
+  .field-edit input { border: 1.5px solid var(--yellow); border-radius: 6px; padding: 5px 8px; font-size: 13px; color: var(--gray-800); outline: none; background: white; width: 100%; }
+  .field-edit input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(22,163,74,.1); }
+  .field-edit-hint { font-size: 10px; color: var(--yellow); display: flex; align-items: center; gap: 3px; }
+  .warning-banner { background: #fef3c7; border: 1px solid var(--yellow-mid); border-radius: 8px; padding: 8px 12px; font-size: 12px; color: #92400e; display: flex; align-items: flex-start; gap: 7px; margin: 0 16px 12px; }
+
+  /* ── Bottom Action Bar ── */
+  .action-bar { padding: 14px 20px; background: white; border-top: 1px solid var(--gray-200); display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .action-bar-info { font-size: 12px; color: var(--gray-500); }
+  .action-spacer { flex: 1; }
+  .btn-proceed { background: var(--green); color: white; padding: 9px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; border: none; cursor: pointer; display: flex; align-items: center; gap: 7px; }
+  .btn-proceed:disabled { background: var(--gray-300); cursor: not-allowed; }
+  .confirmed-count { display: flex; align-items: center; gap: 5px; font-size: 13px; color: var(--gray-600); background: var(--gray-100); padding: 6px 12px; border-radius: 7px; }
+  .confirmed-count strong { color: var(--green); }
+</style>
+</head>
+<body style="padding-bottom:54px">
+
+<!-- App Bar -->
+<div class="appbar">
+  <button class="back-btn">
+    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M15 19l-7-7 7-7"/></svg>
+    Back to List
+  </button>
+  <div class="appbar-divider"></div>
+  <span class="appbar-title">AI Extraction Review</span>
+  <span class="appbar-inv">INV-2025-0109</span>
+  <div class="appbar-spacer"></div>
+  <div class="ai-badge">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+    Claude Haiku 4.5 · 0.84s
+  </div>
+  <button class="btn btn-ghost-dark btn-reprocess">
+    <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+    Reprocess
+  </button>
+  <button class="btn btn-ghost-dark">
+    <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+    Download JSON
+  </button>
+</div>
+
+<!-- Progress Steps -->
+<div class="progress-banner">
+  <div class="progress-step">
+    <div class="step-icon done">
+      <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>
+    </div>
+    <span class="step-label done">Uploaded</span>
+  </div>
+  <span class="step-arrow">›</span>
+  <div class="progress-step">
+    <div class="step-icon done">
+      <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>
+    </div>
+    <span class="step-label done">Quality Check</span>
+  </div>
+  <span class="step-arrow">›</span>
+  <div class="progress-step">
+    <div class="step-icon active">⚡</div>
+    <span class="step-label active">AI Extraction Review</span>
+  </div>
+  <span class="step-arrow">›</span>
+  <div class="progress-step">
+    <div class="step-icon pending">4</div>
+    <span class="step-label">SAT Validation</span>
+  </div>
+  <span class="step-arrow">›</span>
+  <div class="progress-step">
+    <div class="step-icon pending">5</div>
+    <span class="step-label">CW Match</span>
+  </div>
+  <span class="step-arrow">›</span>
+  <div class="progress-step">
+    <div class="step-icon pending">6</div>
+    <span class="step-label">Complete</span>
+  </div>
+  <div class="progress-spacer"></div>
+  <div class="overall-score">
+    <span class="score-label">Overall confidence</span>
+    <div class="score-ring-wrap">
+      <svg width="36" height="36" viewBox="0 0 36 36">
+        <circle cx="18" cy="18" r="14" fill="none" stroke="#374151" stroke-width="3"/>
+        <circle cx="18" cy="18" r="14" fill="none" stroke="#86efac" stroke-width="3" stroke-dasharray="65 24" stroke-dashoffset="0" transform="rotate(-90 18 18)"/>
+      </svg>
+      <div class="score-val">74%</div>
+    </div>
+  </div>
+  <button class="confirm-all-btn">
+    <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>
+    Confirm All Fields
+  </button>
+</div>
+
+<!-- Main Content -->
+<div class="main-content">
+
+  <!-- PDF Panel -->
+  <div class="pdf-panel">
+    <div class="pdf-toolbar">
+      <button class="pdf-tool-btn" title="Zoom out"><svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M20 20l-4.35-4.35M15.5 9.5a6 6 0 11-12 0 6 6 0 0112 0zM9.5 7v5m-2.5-2.5h5"/></svg></button>
+      <span class="pdf-zoom">85%</span>
+      <button class="pdf-tool-btn" title="Zoom in"><svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M20 20l-4.35-4.35M15.5 9.5a6 6 0 11-12 0 6 6 0 0112 0zM9.5 7v5m0 0v0M7 9.5h5"/></svg></button>
+      <div class="pdf-spacer"></div>
+      <div class="annotation-toggle">
+        <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+        Annotations ON
+      </div>
+      <div class="pdf-spacer"></div>
+      <div class="pdf-page-nav">
+        <button class="pdf-tool-btn"><svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M15 19l-7-7 7-7"/></svg></button>
+        <span>Page 1 of 1</span>
+        <button class="pdf-tool-btn"><svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M9 5l7 7-7 7"/></svg></button>
+      </div>
+    </div>
+
+    <div class="pdf-viewer">
+      <div class="pdf-page">
+        <!-- Annotation highlights -->
+        <div class="highlight green" style="top:30px;left:36px;width:80px;height:24px;">
+          <span class="highlight-label green">Vendor ✓</span>
+        </div>
+        <div class="highlight blue" style="top:30px;right:36px;width:130px;height:52px;">
+          <span class="highlight-label blue">Inv # + Date</span>
+        </div>
+        <div class="highlight yellow" style="top:90px;left:36px;right:36px;height:60px;">
+          <span class="highlight-label yellow">Parties — Review RFC</span>
+        </div>
+        <div class="highlight green" style="bottom:110px;left:36px;right:36px;height:72px;">
+          <span class="highlight-label green">Line Items ✓</span>
+        </div>
+        <div class="highlight yellow" style="bottom:55px;right:36px;width:140px;height:48px;">
+          <span class="highlight-label yellow">Totals — IVA ⚠</span>
+        </div>
+
+        <!-- Invoice Content -->
+        <div class="invoice-header">
+          <div>
+            <div class="company-logo-mock">TMN</div>
+            <div style="margin-top:6px;font-size:9px;color:#6b7280;line-height:1.5;">
+              Transportes Frontera Norte<br>
+              CDMX, Mexico CP 06600
+            </div>
+          </div>
+          <div class="invoice-meta">
+            <h2>FACTURA</h2>
+            <p>
+              Folio: <strong>TFN-2025-0109</strong><br>
+              Fecha: <strong>01/03/2025</strong><br>
+              UUID: <strong>3f8a1c2d-...</strong><br>
+              CFDI 4.0
+            </p>
+          </div>
+        </div>
+
+        <div class="invoice-parties">
+          <div class="party-block">
+            <h4>Emisor (Sender)</h4>
+            <p>
+              <strong>Transportes Frontera Norte SA de CV</strong><br>
+              RFC: TFN880909OP1<br>
+              Av. Industrial 445, Monterrey<br>
+              N.L. CP 64000, México
+            </p>
+          </div>
+          <div class="party-block">
+            <h4>Receptor (Recipient)</h4>
+            <p>
+              <strong>Logística Pacífico SA de CV</strong><br>
+              RFC: LPA920615XY8<br>
+              Blvd. Manuel Ávila Camacho 40<br>
+              CDMX, CP 11000, México
+            </p>
+          </div>
+        </div>
+
+        <div class="line-items">
+          <table>
+            <thead>
+              <tr>
+                <th>Descripción</th>
+                <th>Cant.</th>
+                <th>P. Unit.</th>
+                <th>Importe</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Servicio de transporte terrestre<br><span style="color:#9ca3af;font-size:9px;">Monterrey → Manzanillo, contenedor 40HC</span></td>
+                <td>1</td>
+                <td>$14,500.00</td>
+                <td>$14,500.00</td>
+              </tr>
+              <tr>
+                <td>Maniobras y descarga en puerto</td>
+                <td>1</td>
+                <td>$5,800.00</td>
+                <td>$5,800.00</td>
+              </tr>
+              <tr>
+                <td>Seguro de carga terrestre</td>
+                <td>1</td>
+                <td>$2,480.00</td>
+                <td>$2,480.00</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="totals">
+          <div class="total-row"><span>Subtotal:</span><span>$22,780.00</span></div>
+          <div class="total-row"><span>IVA (16%):</span><span>$3,200.00</span></div>
+          <div class="total-row grand"><span>Total:</span><span>$25,980.00</span></div>
+        </div>
+
+        <div class="cfdi-footer">
+          Este documento es una representación impresa de un Comprobante Fiscal Digital por Internet (CFDI).<br>
+          UUID: 3f8a1c2d-e4f5-6789-abcd-ef0123456789 | Cadena Original: ||4.0|3f8a1c2d...<br>
+          Sello Digital: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789==
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Extraction Panel -->
+  <div class="extraction-panel">
+    <div class="extraction-header">
+      <div class="extraction-title">Extracted Fields</div>
+      <div class="extraction-subtitle">15 fields · 3 need review</div>
+    </div>
+
+    <!-- Warning Banner -->
+    <div style="padding:12px 20px 0;">
+      <div class="warning-banner">
+        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:1px;color:#d97706"><path d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+        <div>
+          <strong>3 fields require your review</strong> — AI confidence below 80%.
+          Please verify the highlighted fields before proceeding to SAT validation.
+        </div>
+      </div>
+    </div>
+
+    <div class="fields-scroll">
+
+      <!-- Group 1: Invoice Header -->
+      <div class="field-group">
+        <div class="field-group-header">
+          <div class="field-group-icon" style="background:#dbeafe;">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#3b82f6" stroke-width="2"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          </div>
+          <span class="field-group-title">Invoice Header</span>
+          <div class="field-group-score">
+            <div class="group-score-bar"><div class="group-score-fill" style="width:88%;background:#16a34a;"></div></div>
+            <span style="font-size:12px;font-weight:600;color:#16a34a;">88%</span>
+          </div>
+        </div>
+
+        <!-- Invoice Number — high conf, confirmed -->
+        <div class="field-row confirmed">
+          <div class="field-label">Invoice #</div>
+          <div class="field-value-wrap">
+            <div class="field-value mono">TFN-2025-0109</div>
+            <div class="field-source">Extracted from header · Folio field</div>
+          </div>
+          <div class="field-conf">
+            <div class="conf-bar"><div class="conf-fill" style="width:97%;background:#16a34a;"></div></div>
+            <span class="conf-val high">97%</span>
+          </div>
+          <div class="field-status confirmed" title="Confirmed">
+            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>
+          </div>
+        </div>
+
+        <!-- Invoice Date — high conf -->
+        <div class="field-row confirmed">
+          <div class="field-label">Invoice Date</div>
+          <div class="field-value-wrap">
+            <div class="field-value">March 01, 2025</div>
+            <div class="field-source">Extracted from header · Fecha</div>
+          </div>
+          <div class="field-conf">
+            <div class="conf-bar"><div class="conf-fill" style="width:99%;background:#16a34a;"></div></div>
+            <span class="conf-val high">99%</span>
+          </div>
+          <div class="field-status confirmed">
+            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>
+          </div>
+        </div>
+
+        <!-- UUID — high conf -->
+        <div class="field-row confirmed">
+          <div class="field-label">UUID (CFDI)</div>
+          <div class="field-value-wrap">
+            <div class="field-value mono" style="font-size:11px;">3f8a1c2d-e4f5-6789-abcd-ef0123456789</div>
+            <div class="field-source">Extracted from complemento · TimbreFiscalDigital</div>
+          </div>
+          <div class="field-conf">
+            <div class="conf-bar"><div class="conf-fill" style="width:100%;background:#16a34a;"></div></div>
+            <span class="conf-val high">100%</span>
+          </div>
+          <div class="field-status confirmed">
+            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Group 2: Vendor -->
+      <div class="field-group">
+        <div class="field-group-header">
+          <div class="field-group-icon" style="background:#dcfce7;">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#16a34a" stroke-width="2"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0"/></svg>
+          </div>
+          <span class="field-group-title">Vendor (Emisor)</span>
+          <div class="field-group-score">
+            <div class="group-score-bar"><div class="group-score-fill" style="width:78%;background:#f59e0b;"></div></div>
+            <span style="font-size:12px;font-weight:600;color:#d97706;">78%</span>
+          </div>
+        </div>
+
+        <!-- Vendor Name — confirmed -->
+        <div class="field-row confirmed">
+          <div class="field-label">Vendor Name</div>
+          <div class="field-value-wrap">
+            <div class="field-value">Transportes Frontera Norte SA de CV</div>
+            <div class="field-source">Extracted from Emisor · Nombre</div>
+          </div>
+          <div class="field-conf">
+            <div class="conf-bar"><div class="conf-fill" style="width:94%;background:#16a34a;"></div></div>
+            <span class="conf-val high">94%</span>
+          </div>
+          <div class="field-status confirmed">
+            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>
+          </div>
+        </div>
+
+        <!-- RFC — NEEDS REVIEW (mid confidence, editable) -->
+        <div class="field-row low-conf">
+          <div class="field-label">Vendor RFC</div>
+          <div class="field-value-wrap">
+            <div class="field-edit">
+              <input type="text" value="TFN880909OP1" style="border-color:#f59e0b;">
+              <div class="field-edit-hint">
+                <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+                AI read as "TFN880909OP1" — verify against SAT
+              </div>
+            </div>
+          </div>
+          <div class="field-conf">
+            <div class="conf-bar"><div class="conf-fill" style="width:68%;background:#f59e0b;"></div></div>
+            <span class="conf-val mid">68%</span>
+          </div>
+          <div class="field-status needs-review" title="Needs review">
+            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 9v2m0 4h.01"/></svg>
+          </div>
+        </div>
+
+        <!-- Vendor Address — confirmed -->
+        <div class="field-row confirmed">
+          <div class="field-label">Address</div>
+          <div class="field-value-wrap">
+            <div class="field-value">Av. Industrial 445, Monterrey N.L.</div>
+            <div class="field-source">Extracted from Emisor · DomicilioFiscalEmisor</div>
+          </div>
+          <div class="field-conf">
+            <div class="conf-bar"><div class="conf-fill" style="width:85%;background:#16a34a;"></div></div>
+            <span class="conf-val high">85%</span>
+          </div>
+          <div class="field-status confirmed">
+            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Group 3: Amounts -->
+      <div class="field-group">
+        <div class="field-group-header">
+          <div class="field-group-icon" style="background:#fef3c7;">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#d97706" stroke-width="2"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <span class="field-group-title">Amounts & Taxes</span>
+          <div class="field-group-score">
+            <div class="group-score-bar"><div class="group-score-fill" style="width:55%;background:#ef4444;"></div></div>
+            <span style="font-size:12px;font-weight:600;color:#ef4444;">55%</span>
+          </div>
+        </div>
+
+        <!-- Subtotal — confirmed -->
+        <div class="field-row confirmed">
+          <div class="field-label">Subtotal</div>
+          <div class="field-value-wrap">
+            <div class="field-value">$22,780.00 MXN</div>
+            <div class="field-source">Extracted from Comprobante · SubTotal</div>
+          </div>
+          <div class="field-conf">
+            <div class="conf-bar"><div class="conf-fill" style="width:99%;background:#16a34a;"></div></div>
+            <span class="conf-val high">99%</span>
+          </div>
+          <div class="field-status confirmed">
+            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>
+          </div>
+        </div>
+
+        <!-- IVA — LOW CONFIDENCE, editable -->
+        <div class="field-row low-conf">
+          <div class="field-label">IVA Amount</div>
+          <div class="field-value-wrap">
+            <div class="field-edit">
+              <input type="text" value="$3,200.00" style="border-color:#ef4444;border-width:2px;">
+              <div class="field-edit-hint" style="color:#ef4444;">
+                <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                Expected $3,644.80 (16% of $22,780) — PDF shows $3,200.00 — mismatch!
+              </div>
+            </div>
+          </div>
+          <div class="field-conf">
+            <div class="conf-bar"><div class="conf-fill" style="width:42%;background:#ef4444;"></div></div>
+            <span class="conf-val low">42%</span>
+          </div>
+          <div class="field-status error" title="Discrepancy detected">
+            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M6 18L18 6M6 6l12 12"/></svg>
+          </div>
+        </div>
+
+        <!-- Total — needs review -->
+        <div class="field-row low-conf">
+          <div class="field-label">Total Amount</div>
+          <div class="field-value-wrap">
+            <div class="field-edit">
+              <input type="text" value="$25,980.00" style="border-color:#f59e0b;">
+              <div class="field-edit-hint">
+                <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+                Subtotal + IVA = $25,980.00 vs expected $26,424.80
+              </div>
+            </div>
+          </div>
+          <div class="field-conf">
+            <div class="conf-bar"><div class="conf-fill" style="width:60%;background:#f59e0b;"></div></div>
+            <span class="conf-val mid">60%</span>
+          </div>
+          <div class="field-status needs-review">
+            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 9v2m0 4h.01"/></svg>
+          </div>
+        </div>
+
+        <!-- Currency — confirmed -->
+        <div class="field-row confirmed">
+          <div class="field-label">Currency</div>
+          <div class="field-value-wrap">
+            <div class="field-value">MXN — Mexican Peso</div>
+            <div class="field-source">Extracted from Comprobante · Moneda</div>
+          </div>
+          <div class="field-conf">
+            <div class="conf-bar"><div class="conf-fill" style="width:100%;background:#16a34a;"></div></div>
+            <span class="conf-val high">100%</span>
+          </div>
+          <div class="field-status confirmed">
+            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Group 4: Line Items -->
+      <div class="field-group">
+        <div class="field-group-header">
+          <div class="field-group-icon" style="background:#ede9fe;">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#8b5cf6" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+          </div>
+          <span class="field-group-title">Line Items (3 items)</span>
+          <div class="field-group-score">
+            <div class="group-score-bar"><div class="group-score-fill" style="width:91%;background:#16a34a;"></div></div>
+            <span style="font-size:12px;font-weight:600;color:#16a34a;">91%</span>
+          </div>
+        </div>
+
+        <div class="field-row confirmed">
+          <div class="field-label">Item 1</div>
+          <div class="field-value-wrap">
+            <div class="field-value" style="font-size:12px;">Servicio de transporte terrestre · $14,500.00</div>
+            <div class="field-source">Concepto[0] · Descripción + Importe</div>
+          </div>
+          <div class="field-conf">
+            <div class="conf-bar"><div class="conf-fill" style="width:93%;background:#16a34a;"></div></div>
+            <span class="conf-val high">93%</span>
+          </div>
+          <div class="field-status confirmed">
+            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>
+          </div>
+        </div>
+
+        <div class="field-row confirmed">
+          <div class="field-label">Item 2</div>
+          <div class="field-value-wrap">
+            <div class="field-value" style="font-size:12px;">Maniobras y descarga en puerto · $5,800.00</div>
+            <div class="field-source">Concepto[1] · Descripción + Importe</div>
+          </div>
+          <div class="field-conf">
+            <div class="conf-bar"><div class="conf-fill" style="width:89%;background:#16a34a;"></div></div>
+            <span class="conf-val high">89%</span>
+          </div>
+          <div class="field-status confirmed">
+            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>
+          </div>
+        </div>
+
+        <div class="field-row confirmed">
+          <div class="field-label">Item 3</div>
+          <div class="field-value-wrap">
+            <div class="field-value" style="font-size:12px;">Seguro de carga terrestre · $2,480.00</div>
+            <div class="field-source">Concepto[2] · Descripción + Importe</div>
+          </div>
+          <div class="field-conf">
+            <div class="conf-bar"><div class="conf-fill" style="width:92%;background:#16a34a;"></div></div>
+            <span class="conf-val high">92%</span>
+          </div>
+          <div class="field-status confirmed">
+            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Action Bar -->
+    <div class="action-bar">
+      <div class="confirmed-count">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#16a34a" stroke-width="2.5"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <strong>12</strong> / 15 fields confirmed
+      </div>
+      <div class="action-bar-info" style="margin-left:8px;color:#ef4444;">
+        ⚠ 2 fields have discrepancies — resolve before proceeding
+      </div>
+      <div class="action-spacer"></div>
+      <button class="btn btn-ghost-dark" style="background:white;color:#374151;border-color:#e5e7eb;">
+        Save Draft
+      </button>
+      <button class="btn-proceed" disabled title="Resolve discrepancies first">
+        Proceed to SAT Validation
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- FF PROTO NAV -->
+<style>
+.pbar{position:fixed;bottom:0;left:0;right:0;height:54px;background:rgba(17,24,39,.97);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid rgba(255,255,255,.07);display:flex;align-items:center;padding:0 20px;gap:10px;z-index:99999;font-family:'Inter',sans-serif;}
+.pbtn{display:inline-flex;align-items:center;gap:6px;color:rgba(255,255,255,.65);font-size:12px;font-weight:500;text-decoration:none;padding:5px 12px;border-radius:6px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.09);white-space:nowrap;transition:all .15s;}
+.pbtn:hover{background:rgba(255,255,255,.13);color:#fff;text-decoration:none;}
+.pbtn.off{opacity:.2;pointer-events:none;}
+.pctr{flex:1;display:flex;align-items:center;justify-content:center;gap:10px;}
+.pflw{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#86efac;background:rgba(22,163,74,.14);border:1px solid rgba(22,163,74,.22);padding:2px 9px;border-radius:10px;}
+.ptit{font-size:13px;font-weight:600;color:#fff;font-family:'Outfit',sans-serif;}
+.pnum{font-size:11px;color:rgba(255,255,255,.28);}
+.pmapbtn{width:32px;height:32px;border-radius:6px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.09);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.4);flex-shrink:0;}
+.pmapbtn:hover{background:rgba(255,255,255,.13);color:#fff;}
+.pkeys{display:flex;align-items:center;gap:4px;font-size:10px;color:rgba(255,255,255,.18);margin-left:4px;}
+.pkey{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:3px;padding:1px 5px;font-family:monospace;}
+.pmap{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);z-index:100000;padding:36px 40px;overflow-y:auto;}
+.pmap.on{display:block;}
+.pmhd{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;}
+.pmhd h2{font-family:'Outfit',sans-serif;font-weight:700;font-size:22px;color:#fff;margin:0;}
+.pmcls{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:rgba(255,255,255,.6);cursor:pointer;font-size:20px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;}
+.pmcls:hover{background:rgba(255,255,255,.15);color:#fff;}
+.pmgrp{margin-bottom:18px;}
+.pmgl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.28);margin-bottom:7px;}
+.pmscrns{display:flex;flex-wrap:wrap;gap:5px;}
+.pmitem{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);border-radius:5px;text-decoration:none;font-size:11px;color:rgba(255,255,255,.55);transition:all .15s;font-family:'Inter',sans-serif;}
+.pmitem:hover{background:rgba(22,163,74,.18);border-color:rgba(22,163,74,.4);color:#fff;text-decoration:none;}
+.pmitem.cur{background:rgba(22,163,74,.2);border-color:#16a34a;color:#86efac;}
+.pmn{font-size:9px;color:rgba(255,255,255,.22);font-family:monospace;}
+</style>
+<div class="pbar">
+  <div style="display:flex;align-items:center;min-width:160px;">
+    <a class="pbtn" id="pp" href="28-bulk-upload.html">
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg>
+      Bulk Upload
+    </a>
+  </div>
+  <div class="pctr">
+    <span class="pflw">Invoices</span>
+    <span class="ptit">AI Extraction</span>
+    <span class="pnum">10 / 49</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:6px;min-width:160px;justify-content:flex-end;">
+    <a class="pbtn" id="pn" href="03-invoice-detail.html">
+      Invoice Detail
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+    </a>
+    <button class="pmapbtn" onclick="document.getElementById('pmo').classList.toggle('on')" title="Screen map (M)">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    </button>
+    <div class="pkeys"><span class="pkey">&#8592;</span><span class="pkey">&#8594;</span><span style="margin-left:3px"><span class="pkey">M</span> map</span></div>
+  </div>
+</div>
+<div class="pmap" id="pmo">
+  <div style="max-width:1100px;margin:0 auto;">
+    <div class="pmhd">
+      <h2>FacturaFlow &mdash; All 49 Screens</h2>
+      <button class="pmcls" onclick="document.getElementById('pmo').classList.remove('on')">&#x2715;</button>
+    </div>
+    <div class="pmgrp"><div class="pmgl">Onboarding</div><div class="pmscrns">
+<a class="pmitem" href="06-signup.html"><span class="pmn">01</span>Sign Up</a>
+<a class="pmitem" href="34-onboarding-checklist.html"><span class="pmn">02</span>Onboarding Checklist</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Authentication</div><div class="pmscrns">
+<a class="pmitem" href="09-login.html"><span class="pmn">03</span>Login</a>
+<a class="pmitem" href="10-forgot-password.html"><span class="pmn">04</span>Forgot Password</a>
+<a class="pmitem" href="11-tenant-switcher.html"><span class="pmn">05</span>Workspace Switcher</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Core App</div><div class="pmscrns">
+<a class="pmitem" href="01-dashboard.html"><span class="pmn">06</span>Dashboard</a>
+<a class="pmitem" href="25-audit-trail.html"><span class="pmn">17</span>Audit Trail</a>
+<a class="pmitem" href="26-suppliers.html"><span class="pmn">22</span>Suppliers</a>
+<a class="pmitem" href="27-reports.html"><span class="pmn">23</span>Reports</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Invoices</div><div class="pmscrns">
+<a class="pmitem" href="07-invoice-list.html"><span class="pmn">07</span>Invoice List</a>
+<a class="pmitem" href="02-invoice-upload.html"><span class="pmn">08</span>Upload Invoice</a>
+<a class="pmitem" href="28-bulk-upload.html"><span class="pmn">09</span>Bulk Upload</a>
+<a class="pmitem cur" href="08-ai-extraction.html"><span class="pmn">10</span>AI Extraction</a>
+<a class="pmitem" href="03-invoice-detail.html"><span class="pmn">11</span>Invoice Detail</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">SAT &amp; Compliance</div><div class="pmscrns">
+<a class="pmitem" href="04-sat-validation.html"><span class="pmn">12</span>SAT Validation</a>
+<a class="pmitem" href="19-sat-dashboard.html"><span class="pmn">18</span>SAT Dashboard</a>
+<a class="pmitem" href="20-lista-negra.html"><span class="pmn">19</span>Lista Negra</a>
+<a class="pmitem" href="21-rfc-directory.html"><span class="pmn">20</span>RFC Directory</a>
+<a class="pmitem" href="22-sat-settings.html"><span class="pmn">21</span>SAT Settings</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Exceptions</div><div class="pmscrns">
+<a class="pmitem" href="05-exception-queue.html"><span class="pmn">13</span>Exception Queue</a>
+<a class="pmitem" href="37-invoice-comparison.html"><span class="pmn">14</span>Invoice Comparison</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Approval</div><div class="pmscrns">
+<a class="pmitem" href="35-approval-request.html"><span class="pmn">15</span>Approval Request</a>
+<a class="pmitem" href="36-approval-chain.html"><span class="pmn">16</span>Approval Chain</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Workflows</div><div class="pmscrns">
+<a class="pmitem" href="23-workflow-list.html"><span class="pmn">24</span>Workflow List</a>
+<a class="pmitem" href="24-workflow-builder.html"><span class="pmn">25</span>Workflow Builder</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Settings</div><div class="pmscrns">
+<a class="pmitem" href="15-settings-profile.html"><span class="pmn">26</span>Profile</a>
+<a class="pmitem" href="16-settings-team.html"><span class="pmn">27</span>Team</a>
+<a class="pmitem" href="17-settings-integrations.html"><span class="pmn">28</span>Integrations</a>
+<a class="pmitem" href="18-settings-notifications.html"><span class="pmn">29</span>Notifications</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Developer</div><div class="pmscrns">
+<a class="pmitem" href="38-api-keys.html"><span class="pmn">30</span>API Keys</a>
+<a class="pmitem" href="39-webhooks.html"><span class="pmn">31</span>Webhooks</a>
+<a class="pmitem" href="40-global-search.html"><span class="pmn">32</span>Global Search</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Billing</div><div class="pmscrns">
+<a class="pmitem" href="12-billing-overview.html"><span class="pmn">33</span>Billing Overview</a>
+<a class="pmitem" href="13-upgrade-plan.html"><span class="pmn">34</span>Upgrade Plan</a>
+<a class="pmitem" href="14-payment-history.html"><span class="pmn">35</span>Payment History</a>
+<a class="pmitem" href="45-trial-expiry.html"><span class="pmn">36</span>Trial Expiry</a>
+<a class="pmitem" href="46-cancellation-flow.html"><span class="pmn">37</span>Cancellation</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Admin &amp; Ops</div><div class="pmscrns">
+<a class="pmitem" href="41-admin-tenants.html"><span class="pmn">38</span>Admin Tenants</a>
+<a class="pmitem" href="42-admin-impersonate.html"><span class="pmn">39</span>Impersonation</a>
+<a class="pmitem" href="43-cw-field-mapper.html"><span class="pmn">40</span>CW Field Mapper</a>
+<a class="pmitem" href="44-cw-sync-log.html"><span class="pmn">41</span>CW Sync Log</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Empty States</div><div class="pmscrns">
+<a class="pmitem" href="29-empty-invoices.html"><span class="pmn">42</span>Empty Invoices</a>
+<a class="pmitem" href="30-empty-exceptions.html"><span class="pmn">43</span>Empty Exceptions</a>
+<a class="pmitem" href="31-empty-suppliers.html"><span class="pmn">44</span>Empty Suppliers</a>
+<a class="pmitem" href="32-empty-reports.html"><span class="pmn">45</span>Empty Reports</a>
+<a class="pmitem" href="33-empty-workflows.html"><span class="pmn">46</span>Empty Workflows</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Mobile</div><div class="pmscrns">
+<a class="pmitem" href="47-mobile-dashboard.html"><span class="pmn">47</span>Mobile Dashboard</a>
+<a class="pmitem" href="48-mobile-invoice-detail.html"><span class="pmn">48</span>Mobile Invoice</a>
+<a class="pmitem" href="49-mobile-approve.html"><span class="pmn">49</span>Mobile Approve</a>
+</div></div>
+  </div>
+</div>
+<script>
+document.addEventListener('keydown',function(e){
+  var p=document.getElementById('pp'),n=document.getElementById('pn');
+  if(e.key==='ArrowLeft'&&p&&!p.classList.contains('off'))window.location.href=p.href;
+  if(e.key==='ArrowRight'&&n&&!n.classList.contains('off'))window.location.href=n.href;
+  if(e.key==='Escape')document.getElementById('pmo').classList.remove('on');
+  if(e.key.toLowerCase()==='m'&&document.activeElement.tagName!=='INPUT'&&document.activeElement.tagName!=='TEXTAREA')document.getElementById('pmo').classList.toggle('on');
+});
+</script>
+<!-- END FF PROTO NAV -->
+</body>
+</html>

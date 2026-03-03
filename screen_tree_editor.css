@@ -1,0 +1,55 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f0f0f0;
+}
+
+#container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#controls {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#controls label {
+    font-weight: bold;
+}
+
+#controls select, #controls button {
+    padding: 5px 10px;
+    font-size: 14px;
+}
+
+#screen-tree {
+    border: 1px solid #ccc;
+    padding: 10px;
+    min-height: 400px;
+    overflow: auto;
+}
+
+.jstree-node {
+    user-select: none;
+}
+
+.jstree-themeicon {
+    margin-right: 5px;
+}
+
+.jstree-contextmenu {
+    z-index: 1000;
+}

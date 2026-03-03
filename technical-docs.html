@@ -1,0 +1,1974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FacturaFlow — Technical Documentation v1.0</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --primary: #16a34a;
+    --primary-dark: #14532d;
+    --primary-light: #dcfce7;
+    --red: #ef4444;
+    --red-light: #fef2f2;
+    --yellow: #f59e0b;
+    --yellow-light: #fffbeb;
+    --blue: #3b82f6;
+    --blue-light: #eff6ff;
+    --gray-900: #111827;
+    --gray-800: #1f2937;
+    --gray-700: #374151;
+    --gray-600: #4b5563;
+    --gray-500: #6b7280;
+    --gray-400: #9ca3af;
+    --gray-300: #d1d5db;
+    --gray-200: #e5e7eb;
+    --gray-100: #f3f4f6;
+    --gray-50: #f9fafb;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    color: var(--gray-900);
+    background: white;
+    line-height: 1.6;
+  }
+
+  /* ── PRINT STYLES ── */
+  @media print {
+    body { font-size: 11px; }
+    .page-break { page-break-before: always; }
+    .no-print { display: none !important; }
+    nav.sidebar { display: none; }
+    .main-content { margin-left: 0; }
+    a { color: inherit; text-decoration: none; }
+    .cover-page { height: 100vh; }
+  }
+
+  /* ── NAVIGATION SIDEBAR ── */
+  nav.sidebar {
+    position: fixed;
+    left: 0; top: 0; bottom: 0;
+    width: 240px;
+    background: var(--gray-900);
+    overflow-y: auto;
+    z-index: 100;
+    padding: 24px 0;
+  }
+
+  nav.sidebar .logo {
+    padding: 0 20px 20px;
+    border-bottom: 1px solid #374151;
+    margin-bottom: 16px;
+  }
+
+  nav.sidebar .logo .wordmark {
+    font-family: 'Outfit', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--primary);
+  }
+
+  nav.sidebar .logo .subtitle {
+    font-size: 11px;
+    color: var(--gray-500);
+    margin-top: 2px;
+  }
+
+  nav.sidebar a {
+    display: block;
+    padding: 7px 20px;
+    color: var(--gray-400);
+    text-decoration: none;
+    font-size: 13px;
+    transition: all 0.15s;
+  }
+
+  nav.sidebar a:hover { color: white; background: rgba(255,255,255,0.05); }
+
+  nav.sidebar .nav-section {
+    padding: 16px 20px 6px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--gray-600);
+  }
+
+  /* ── MAIN CONTENT ── */
+  .main-content {
+    margin-left: 240px;
+    max-width: 900px;
+  }
+
+  /* ── COVER PAGE ── */
+  .cover-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a2f 50%, #0f172a 100%);
+    position: relative;
+    overflow: hidden;
+    padding: 60px 40px;
+    text-align: center;
+  }
+
+  .cover-page::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 30% 40%, rgba(22,163,74,0.15) 0%, transparent 50%),
+                radial-gradient(circle at 70% 60%, rgba(59,130,246,0.08) 0%, transparent 50%);
+  }
+
+  .cover-logo {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 48px;
+  }
+
+  .cover-logo .icon {
+    width: 80px;
+    height: 80px;
+    background: var(--primary);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    font-size: 40px;
+  }
+
+  .cover-logo .brand {
+    font-family: 'Outfit', sans-serif;
+    font-size: 48px;
+    font-weight: 800;
+    color: white;
+    letter-spacing: -1px;
+  }
+
+  .cover-logo .brand span { color: var(--primary); }
+
+  .cover-title {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 32px;
+  }
+
+  .cover-title h1 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 28px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.9);
+    margin-bottom: 12px;
+  }
+
+  .cover-title p {
+    font-size: 16px;
+    color: rgba(255,255,255,0.5);
+    max-width: 500px;
+  }
+
+  .cover-meta {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    gap: 32px;
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .cover-meta-item { text-align: center; }
+  .cover-meta-item .label { font-size: 11px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px; }
+  .cover-meta-item .value { font-size: 15px; color: rgba(255,255,255,0.8); font-weight: 600; margin-top: 4px; }
+
+  .cover-badges {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    gap: 12px;
+    margin-top: 32px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .cover-badge {
+    padding: 6px 14px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid;
+  }
+
+  .cover-badge.green { background: rgba(22,163,74,0.2); color: #4ade80; border-color: rgba(22,163,74,0.4); }
+  .cover-badge.blue { background: rgba(59,130,246,0.2); color: #93c5fd; border-color: rgba(59,130,246,0.4); }
+  .cover-badge.purple { background: rgba(168,85,247,0.2); color: #c4b5fd; border-color: rgba(168,85,247,0.4); }
+
+  /* ── CONTENT SECTIONS ── */
+  section {
+    padding: 60px 48px;
+    border-bottom: 1px solid var(--gray-100);
+  }
+
+  section:last-child { border-bottom: none; }
+
+  /* ── TYPOGRAPHY ── */
+  h1, h2, h3, h4, h5 { font-family: 'Outfit', sans-serif; }
+
+  .section-eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--primary);
+    margin-bottom: 8px;
+  }
+
+  h2.section-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: 8px;
+  }
+
+  .section-subtitle {
+    font-size: 16px;
+    color: var(--gray-600);
+    margin-bottom: 40px;
+    max-width: 600px;
+  }
+
+  h3 { font-size: 20px; font-weight: 600; color: var(--gray-900); margin: 32px 0 16px; }
+  h4 { font-size: 16px; font-weight: 600; color: var(--gray-800); margin: 24px 0 12px; }
+  h5 { font-size: 14px; font-weight: 600; color: var(--gray-700); margin: 16px 0 8px; }
+
+  p { margin-bottom: 16px; color: var(--gray-700); line-height: 1.7; }
+
+  /* ── TABLES ── */
+  .table-wrap { overflow-x: auto; margin: 16px 0 32px; border-radius: 8px; border: 1px solid var(--gray-200); }
+
+  table { width: 100%; border-collapse: collapse; }
+
+  thead tr { background: var(--gray-50); }
+
+  th {
+    padding: 10px 16px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--gray-600);
+    border-bottom: 1px solid var(--gray-200);
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--gray-100);
+    color: var(--gray-700);
+    vertical-align: top;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--gray-50); }
+
+  /* ── CODE BLOCKS ── */
+  pre {
+    background: var(--gray-900);
+    color: #e2e8f0;
+    padding: 20px 24px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 16px 0 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.7;
+  }
+
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    background: var(--gray-100);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--primary-dark);
+  }
+
+  pre code { background: none; padding: 0; color: inherit; font-size: inherit; }
+
+  .code-green { color: #4ade80; }
+  .code-blue { color: #93c5fd; }
+  .code-yellow { color: #fde68a; }
+  .code-red { color: #fca5a5; }
+  .code-gray { color: #9ca3af; }
+  .code-purple { color: #c4b5fd; }
+
+  /* ── CALLOUT BOXES ── */
+  .callout {
+    padding: 16px 20px;
+    border-radius: 8px;
+    margin: 16px 0 24px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .callout-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .callout-body { flex: 1; }
+  .callout-title { font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+  .callout p { margin: 0; font-size: 13px; }
+
+  .callout.info { background: var(--blue-light); border-left: 3px solid var(--blue); }
+  .callout.info .callout-title { color: #1d4ed8; }
+  .callout.info p { color: #1e40af; }
+
+  .callout.success { background: var(--primary-light); border-left: 3px solid var(--primary); }
+  .callout.success .callout-title { color: #166534; }
+  .callout.success p { color: #14532d; }
+
+  .callout.warning { background: var(--yellow-light); border-left: 3px solid var(--yellow); }
+  .callout.warning .callout-title { color: #92400e; }
+  .callout.warning p { color: #78350f; }
+
+  .callout.danger { background: var(--red-light); border-left: 3px solid var(--red); }
+  .callout.danger .callout-title { color: #991b1b; }
+  .callout.danger p { color: #7f1d1d; }
+
+  /* ── BADGES ── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  .badge.green { background: #dcfce7; color: #166534; }
+  .badge.red { background: #fee2e2; color: #991b1b; }
+  .badge.yellow { background: #fef3c7; color: #92400e; }
+  .badge.blue { background: #dbeafe; color: #1e40af; }
+  .badge.gray { background: var(--gray-100); color: var(--gray-700); }
+  .badge.purple { background: #ede9fe; color: #5b21b6; }
+
+  /* ── ARCHITECTURE DIAGRAM ── */
+  .arch-diagram {
+    background: var(--gray-900);
+    border-radius: 12px;
+    padding: 32px;
+    margin: 24px 0 32px;
+  }
+
+  .arch-layer {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+    align-items: center;
+  }
+
+  .arch-layer-label {
+    width: 100px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    flex-shrink: 0;
+    text-align: right;
+  }
+
+  .arch-boxes {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .arch-box {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+    min-width: 100px;
+  }
+
+  .arch-box.green { background: rgba(22,163,74,0.2); color: #4ade80; border: 1px solid rgba(22,163,74,0.4); }
+  .arch-box.blue { background: rgba(59,130,246,0.2); color: #93c5fd; border: 1px solid rgba(59,130,246,0.4); }
+  .arch-box.purple { background: rgba(168,85,247,0.2); color: #c4b5fd; border: 1px solid rgba(168,85,247,0.4); }
+  .arch-box.orange { background: rgba(249,115,22,0.2); color: #fdba74; border: 1px solid rgba(249,115,22,0.4); }
+  .arch-box.gray { background: rgba(107,114,128,0.2); color: #9ca3af; border: 1px solid rgba(107,114,128,0.4); }
+  .arch-box.yellow { background: rgba(245,158,11,0.2); color: #fde68a; border: 1px solid rgba(245,158,11,0.4); }
+
+  .arch-arrow {
+    text-align: center;
+    color: var(--gray-600);
+    margin: 4px 0;
+    font-size: 18px;
+  }
+
+  /* ── FLOW DIAGRAM ── */
+  .flow-diagram {
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 16px 0 32px;
+  }
+
+  .flow-step {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 12px;
+    align-items: flex-start;
+  }
+
+  .flow-step-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .flow-step-content { flex: 1; }
+  .flow-step-title { font-weight: 600; font-size: 13px; color: var(--gray-900); margin-bottom: 2px; }
+  .flow-step-desc { font-size: 13px; color: var(--gray-600); }
+
+  .flow-connector {
+    width: 2px;
+    height: 16px;
+    background: var(--gray-300);
+    margin: 0 13px;
+  }
+
+  /* ── SCREEN CARD ── */
+  .screen-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin: 16px 0 32px;
+  }
+
+  .screen-card {
+    border: 1px solid var(--gray-200);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .screen-card-header {
+    padding: 12px 16px;
+    background: var(--gray-50);
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .screen-card-num {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .screen-card-title { font-weight: 600; font-size: 14px; color: var(--gray-900); }
+
+  .screen-card-body {
+    padding: 16px;
+  }
+
+  .screen-card-body ul { list-style: none; }
+  .screen-card-body li {
+    font-size: 12px;
+    color: var(--gray-600);
+    padding: 3px 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .screen-card-body li::before { content: '→'; color: var(--primary); flex-shrink: 0; margin-top: 1px; }
+
+  /* ── EXCEPTION TABLE ── */
+  .exception-row-block td:first-child { color: var(--red); font-weight: 700; }
+  .exception-row-warn td:first-child { color: var(--yellow); font-weight: 700; }
+
+  /* ── PRICING TABLE ── */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin: 24px 0 32px;
+  }
+
+  .pricing-card {
+    border: 2px solid var(--gray-200);
+    border-radius: 12px;
+    padding: 24px;
+    position: relative;
+  }
+
+  .pricing-card.featured {
+    border-color: var(--primary);
+    background: var(--primary-light);
+  }
+
+  .pricing-card .plan-name {
+    font-family: 'Outfit', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: 4px;
+  }
+
+  .pricing-card .plan-price {
+    font-family: 'Outfit', sans-serif;
+    font-size: 36px;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 4px;
+  }
+
+  .pricing-card .plan-price span { font-size: 16px; font-weight: 400; color: var(--gray-600); }
+
+  .pricing-card .plan-invoices {
+    font-size: 13px;
+    color: var(--gray-600);
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--gray-200);
+  }
+
+  .pricing-card .plan-feature {
+    font-size: 12px;
+    color: var(--gray-700);
+    padding: 5px 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .pricing-card .plan-feature .check { color: var(--primary); font-weight: 700; }
+  .pricing-card .plan-feature .cross { color: var(--gray-400); }
+
+  .popular-badge {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--primary);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 99px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+
+  /* ── API ENDPOINT ── */
+  .endpoint {
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    margin: 8px 0 16px;
+    overflow: hidden;
+  }
+
+  .endpoint-header {
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid var(--gray-200);
+    background: white;
+  }
+
+  .method {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .method.get { background: #dbeafe; color: #1d4ed8; }
+  .method.post { background: #dcfce7; color: #166534; }
+  .method.patch { background: #fef3c7; color: #92400e; }
+  .method.delete { background: #fee2e2; color: #991b1b; }
+
+  .endpoint-path {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--gray-800);
+  }
+
+  .endpoint-desc {
+    font-size: 12px;
+    color: var(--gray-500);
+    margin-left: auto;
+  }
+
+  .endpoint-body {
+    padding: 12px 16px;
+  }
+
+  .endpoint-body p { font-size: 13px; color: var(--gray-600); margin: 0; }
+
+  /* ── TOC ── */
+  .toc {
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    padding: 32px;
+    margin: 24px 0 40px;
+  }
+
+  .toc h3 { margin-top: 0; font-size: 18px; margin-bottom: 20px; }
+
+  .toc-section { margin-bottom: 8px; }
+
+  .toc-section a {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: all 0.15s;
+  }
+
+  .toc-section a:hover { background: var(--gray-100); }
+
+  .toc-section-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-right: 12px;
+  }
+
+  .toc-section-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--gray-900);
+  }
+
+  .toc-section-desc {
+    font-size: 12px;
+    color: var(--gray-500);
+    margin-left: auto;
+  }
+
+  /* ── KPIS ── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin: 24px 0 32px;
+  }
+
+  .kpi-card {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+  }
+
+  .kpi-value {
+    font-family: 'Outfit', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 4px;
+  }
+
+  .kpi-label {
+    font-size: 12px;
+    color: var(--gray-600);
+  }
+
+  /* ── TIMELINE ── */
+  .timeline { padding: 8px 0; margin: 16px 0 32px; }
+
+  .timeline-item {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .timeline-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--primary);
+    flex-shrink: 0;
+    margin-top: 6px;
+    position: relative;
+  }
+
+  .timeline-dot::after {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 12px;
+    width: 2px;
+    height: calc(100% + 12px);
+    background: var(--gray-200);
+  }
+
+  .timeline-item:last-child .timeline-dot::after { display: none; }
+
+  .timeline-content { flex: 1; }
+  .timeline-title { font-weight: 600; font-size: 15px; color: var(--gray-900); margin-bottom: 4px; }
+  .timeline-desc { font-size: 13px; color: var(--gray-600); }
+
+  /* ── SCHEMA DIAGRAM ── */
+  .schema-diagram {
+    background: var(--gray-900);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 16px 0 32px;
+    overflow-x: auto;
+  }
+
+  .schema-table-card {
+    display: inline-block;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    margin: 8px;
+    min-width: 180px;
+    vertical-align: top;
+  }
+
+  .schema-table-card .table-name {
+    padding: 8px 12px;
+    background: rgba(22,163,74,0.2);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    color: #4ade80;
+    border-radius: 8px 8px 0 0;
+  }
+
+  .schema-table-card .field {
+    padding: 4px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: #9ca3af;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .schema-table-card .field:last-child { border-bottom: none; }
+  .schema-table-card .field .pk { color: #fde68a; }
+  .schema-table-card .field .fk { color: #93c5fd; }
+  .schema-table-card .field .type { color: #c4b5fd; margin-left: 4px; }
+
+  /* ── DIVIDER ── */
+  hr { border: none; border-top: 1px solid var(--gray-100); margin: 32px 0; }
+
+  /* ── LISTS ── */
+  ul, ol { padding-left: 24px; margin-bottom: 16px; }
+  li { margin-bottom: 6px; color: var(--gray-700); font-size: 14px; }
+  li::marker { color: var(--primary); }
+
+  /* ── FOOTER ── */
+  .doc-footer {
+    background: var(--gray-900);
+    color: var(--gray-500);
+    padding: 32px 48px;
+    font-size: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .doc-footer .brand { color: var(--primary); font-weight: 600; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    nav.sidebar { display: none; }
+    .main-content { margin-left: 0; }
+    section { padding: 40px 24px; }
+    .pricing-grid { grid-template-columns: 1fr; }
+    .screen-grid { grid-template-columns: 1fr; }
+    .kpi-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR NAVIGATION -->
+<nav class="sidebar no-print">
+  <div class="logo">
+    <div class="wordmark">FacturaFlow</div>
+    <div class="subtitle">Technical Docs v1.0</div>
+  </div>
+  <div class="nav-section">Overview</div>
+  <a href="#overview">Platform Overview</a>
+  <a href="#architecture">Architecture</a>
+  <a href="#tech-stack">Tech Stack</a>
+  <div class="nav-section">Data</div>
+  <a href="#database">Database Schema</a>
+  <a href="#api">API Reference</a>
+  <div class="nav-section">Processing</div>
+  <a href="#n8n-workflow">n8n AP Processor</a>
+  <a href="#sat-integration">SAT Integration</a>
+  <a href="#exceptions">Exception System</a>
+  <div class="nav-section">Screens</div>
+  <a href="#screens">Screen Specs</a>
+  <a href="#design-system">Design System</a>
+  <div class="nav-section">Operations</div>
+  <a href="#deployment">Deployment</a>
+  <a href="#saas">SaaS & Billing</a>
+  <a href="#roadmap">Roadmap</a>
+</nav>
+
+<!-- MAIN CONTENT -->
+<div class="main-content">
+
+<!-- ═══════════════════════════════════════════ COVER PAGE -->
+<div class="cover-page">
+  <div class="cover-logo">
+    <div class="icon">📄</div>
+    <div class="brand">Factura<span>Flow</span></div>
+  </div>
+  <div class="cover-title">
+    <h1>Technical Documentation</h1>
+    <p>Complete platform specification for AP invoice automation with SAT CFDI 4.0 compliance</p>
+  </div>
+  <div class="cover-badges">
+    <span class="cover-badge green">Next.js 16</span>
+    <span class="cover-badge green">Prisma 6</span>
+    <span class="cover-badge blue">PostgreSQL 16</span>
+    <span class="cover-badge blue">TypeScript 5</span>
+    <span class="cover-badge purple">Claude AI</span>
+    <span class="cover-badge purple">n8n Workflows</span>
+  </div>
+  <div class="cover-meta">
+    <div class="cover-meta-item">
+      <div class="label">Version</div>
+      <div class="value">1.0</div>
+    </div>
+    <div class="cover-meta-item">
+      <div class="label">Date</div>
+      <div class="value">March 2026</div>
+    </div>
+    <div class="cover-meta-item">
+      <div class="label">Status</div>
+      <div class="value">MVP In Progress</div>
+    </div>
+    <div class="cover-meta-item">
+      <div class="label">Screens</div>
+      <div class="value">28 MVP / 80 Full</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ TOC -->
+<section id="toc">
+  <div class="section-eyebrow">Contents</div>
+  <h2 class="section-title">Table of Contents</h2>
+  <div class="toc">
+    <div class="toc-section"><a href="#overview"><div class="toc-section-num">1</div><div class="toc-section-title">Platform Overview</div><div class="toc-section-desc">What is FacturaFlow</div></a></div>
+    <div class="toc-section"><a href="#architecture"><div class="toc-section-num">2</div><div class="toc-section-title">Architecture</div><div class="toc-section-desc">Multi-tenant SaaS architecture</div></a></div>
+    <div class="toc-section"><a href="#tech-stack"><div class="toc-section-num">3</div><div class="toc-section-title">Tech Stack</div><div class="toc-section-desc">Framework, libraries, infrastructure</div></a></div>
+    <div class="toc-section"><a href="#database"><div class="toc-section-num">4</div><div class="toc-section-title">Database Schema</div><div class="toc-section-desc">13 models, enums, relationships</div></a></div>
+    <div class="toc-section"><a href="#api"><div class="toc-section-num">5</div><div class="toc-section-title">API Reference</div><div class="toc-section-desc">All REST endpoints</div></a></div>
+    <div class="toc-section"><a href="#n8n-workflow"><div class="toc-section-num">6</div><div class="toc-section-title">n8n AP Invoice Processor</div><div class="toc-section-desc">24-node workflow, responses</div></a></div>
+    <div class="toc-section"><a href="#sat-integration"><div class="toc-section-num">7</div><div class="toc-section-title">SAT Integration</div><div class="toc-section-desc">CFDI 4.0 validation, Lista Negra</div></a></div>
+    <div class="toc-section"><a href="#exceptions"><div class="toc-section-num">8</div><div class="toc-section-title">Exception System</div><div class="toc-section-desc">Blocking vs warning exceptions</div></a></div>
+    <div class="toc-section"><a href="#screens"><div class="toc-section-num">9</div><div class="toc-section-title">Screen Specifications</div><div class="toc-section-desc">28 MVP screens, user flows</div></a></div>
+    <div class="toc-section"><a href="#design-system"><div class="toc-section-num">10</div><div class="toc-section-title">Design System</div><div class="toc-section-desc">Colors, typography, components</div></a></div>
+    <div class="toc-section"><a href="#deployment"><div class="toc-section-num">11</div><div class="toc-section-title">Deployment Guide</div><div class="toc-section-desc">Docker, VPS, environment</div></a></div>
+    <div class="toc-section"><a href="#saas"><div class="toc-section-num">12</div><div class="toc-section-title">SaaS & Billing</div><div class="toc-section-desc">Pricing, Stripe, multi-tenancy</div></a></div>
+    <div class="toc-section"><a href="#roadmap"><div class="toc-section-num">13</div><div class="toc-section-title">Roadmap</div><div class="toc-section-desc">MVP timeline, post-launch phases</div></a></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ 1. OVERVIEW -->
+<section id="overview" class="page-break">
+  <div class="section-eyebrow">Section 1</div>
+  <h2 class="section-title">Platform Overview</h2>
+  <p class="section-subtitle">FacturaFlow is a B2B SaaS platform for AP invoice automation targeting Mexican freight forwarders and customs brokers.</p>
+
+  <h3>What is FacturaFlow?</h3>
+  <p>FacturaFlow (also known as "AP Check") automates accounts payable invoice processing with deep integration into Mexico's SAT (Servicio de Administración Tributaria) tax authority. It validates CFDI 4.0 XML facturas, checks vendor blacklists, extracts data using AI, and routes invoices through configurable approval workflows.</p>
+
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-value">80%</div><div class="kpi-label">Reduction in AP processing time</div></div>
+    <div class="kpi-card"><div class="kpi-value">&lt;30s</div><div class="kpi-label">Invoice processing target</div></div>
+    <div class="kpi-card"><div class="kpi-value">8</div><div class="kpi-label">Parallel exception checks</div></div>
+    <div class="kpi-card"><div class="kpi-value">155K</div><div class="kpi-label">Target companies in Mexico</div></div>
+  </div>
+
+  <h3>Core Value Propositions</h3>
+  <ul>
+    <li><strong>SAT CFDI 4.0 Validation</strong> — Real-time verification that invoices are legitimate, active, and not issued by blacklisted vendors</li>
+    <li><strong>Lista Negra Check</strong> — Automatic screening against SAT's blacklist of companies with presumed or confirmed tax fraud</li>
+    <li><strong>AI Data Extraction</strong> — Claude Haiku extracts 15 fields from PDF invoices, eliminating manual data entry</li>
+    <li><strong>CargoWise Integration</strong> — Matches invoices to shipments and purchasing parties in CW ERP for 3-way match validation</li>
+    <li><strong>Configurable Workflows</strong> — Visual workflow builder for custom approval rules, escalations, and notifications</li>
+    <li><strong>Supplier Portal</strong> — Self-service portal for vendors to submit invoices and track payment status</li>
+  </ul>
+
+  <h3>Target Market</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Segment</th><th>Pain Point</th><th>FacturaFlow Solution</th></tr></thead>
+      <tbody>
+        <tr><td>Freight Forwarders</td><td>Manual invoice validation, CW matching errors</td><td>Auto-match to consols, SAT validation, CargoWise integration</td></tr>
+        <tr><td>Customs Brokers</td><td>Lista Negra vendor risk, CFDI compliance</td><td>Real-time blacklist check, CFDI 4.0 validation</td></tr>
+        <tr><td>Manufacturers (Import)</td><td>High invoice volume, exception handling</td><td>Bulk processing, workflow automation, exception queue</td></tr>
+        <tr><td>3PL Providers</td><td>Multi-client AP complexity, audit trails</td><td>Multi-tenant, full audit log, reporting</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ 2. ARCHITECTURE -->
+<section id="architecture" class="page-break">
+  <div class="section-eyebrow">Section 2</div>
+  <h2 class="section-title">Architecture</h2>
+  <p class="section-subtitle">Multi-tenant SaaS with shared database, row-level security, and modular n8n processing pipeline.</p>
+
+  <h3>System Architecture</h3>
+
+  <div class="arch-diagram">
+    <div class="arch-layer">
+      <div class="arch-layer-label">Clients</div>
+      <div class="arch-boxes">
+        <div class="arch-box blue">Web App</div>
+        <div class="arch-box blue">Supplier Portal</div>
+        <div class="arch-box blue">REST API</div>
+        <div class="arch-box gray">Power Automate</div>
+      </div>
+    </div>
+    <div class="arch-arrow">↓</div>
+    <div class="arch-layer">
+      <div class="arch-layer-label">Frontend</div>
+      <div class="arch-boxes">
+        <div class="arch-box green">Next.js 16 App Router</div>
+        <div class="arch-box green">ShadCN UI + Tailwind v4</div>
+        <div class="arch-box green">Recharts</div>
+      </div>
+    </div>
+    <div class="arch-arrow">↓</div>
+    <div class="arch-layer">
+      <div class="arch-layer-label">API Layer</div>
+      <div class="arch-boxes">
+        <div class="arch-box green">Next.js API Routes</div>
+        <div class="arch-box yellow">NextAuth v5</div>
+        <div class="arch-box yellow">Prisma 6 ORM</div>
+      </div>
+    </div>
+    <div class="arch-arrow">↓</div>
+    <div class="arch-layer">
+      <div class="arch-layer-label">Processing</div>
+      <div class="arch-boxes">
+        <div class="arch-box purple">n8n AP Processor</div>
+        <div class="arch-box purple">Claude Haiku AI</div>
+        <div class="arch-box orange">CargoWise SQL</div>
+        <div class="arch-box orange">SAT API</div>
+      </div>
+    </div>
+    <div class="arch-arrow">↓</div>
+    <div class="arch-layer">
+      <div class="arch-layer-label">Storage</div>
+      <div class="arch-boxes">
+        <div class="arch-box blue">PostgreSQL 16</div>
+        <div class="arch-box blue">Row-Level Security</div>
+        <div class="arch-box gray">File Storage</div>
+        <div class="arch-box gray">Redis Cache</div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Multi-Tenancy Strategy</h3>
+  <p>FacturaFlow uses a <strong>shared database with Row-Level Security (RLS)</strong> approach. All tenant data lives in the same PostgreSQL instance, with <code>tenant_id</code> foreign keys on every table. PostgreSQL RLS policies ensure tenants can only access their own data.</p>
+
+  <div class="callout info">
+    <div class="callout-icon">ℹ️</div>
+    <div class="callout-body">
+      <div class="callout-title">Tenant Context Flow</div>
+      <p>Subdomain <code>acme.facturaflow.com</code> → Middleware extracts tenant → Sets <code>SET app.current_tenant = :tenantId</code> → All queries auto-filtered by RLS policy</p>
+    </div>
+  </div>
+
+  <h4>Row-Level Security Policy</h4>
+  <pre><code><span class="code-green">-- Enable RLS on all tables</span>
+<span class="code-blue">ALTER TABLE</span> invoices <span class="code-blue">ENABLE ROW LEVEL SECURITY</span>;
+
+<span class="code-green">-- Auto-filter all queries by current tenant</span>
+<span class="code-blue">CREATE POLICY</span> tenant_isolation <span class="code-blue">ON</span> invoices
+  <span class="code-blue">USING</span> (tenant_id = current_setting(<span class="code-yellow">'app.current_tenant'</span>)::<span class="code-purple">UUID</span>);
+
+<span class="code-green">-- Middleware sets session variable</span>
+<span class="code-blue">SET</span> app.current_tenant = <span class="code-yellow">'550e8400-e29b-41d4-a716-446655440000'</span>;</code></pre>
+
+  <h3>Invoice Processing Flow</h3>
+  <div class="flow-diagram">
+    <div class="flow-step">
+      <div class="flow-step-num">1</div>
+      <div class="flow-step-content">
+        <div class="flow-step-title">Invoice Received</div>
+        <div class="flow-step-desc">PDF uploaded via web UI, API, or email (Power Automate). Stored with tenant_id.</div>
+      </div>
+    </div>
+    <div class="flow-connector"></div>
+    <div class="flow-step">
+      <div class="flow-step-num">2</div>
+      <div class="flow-step-content">
+        <div class="flow-step-title">n8n Webhook Triggered</div>
+        <div class="flow-step-desc">POST to <code>/webhook/ap-invoice-process</code> with PDF as multipart or base64 JSON.</div>
+      </div>
+    </div>
+    <div class="flow-connector"></div>
+    <div class="flow-step">
+      <div class="flow-step-num">3</div>
+      <div class="flow-step-content">
+        <div class="flow-step-title">AI Extraction</div>
+        <div class="flow-step-desc">Claude Haiku extracts 15 fields. PDF quality gate: min 20 words, must contain numbers.</div>
+      </div>
+    </div>
+    <div class="flow-connector"></div>
+    <div class="flow-step">
+      <div class="flow-step-num">4</div>
+      <div class="flow-step-content">
+        <div class="flow-step-title">8 Parallel Validation Checks</div>
+        <div class="flow-step-desc">SAT validation, Lista Negra, duplicate check, payment status, amount tolerance, currency, IVA tax, shipment dates — all parallel.</div>
+      </div>
+    </div>
+    <div class="flow-connector"></div>
+    <div class="flow-step">
+      <div class="flow-step-num">5</div>
+      <div class="flow-step-content">
+        <div class="flow-step-title">Exception Evaluation</div>
+        <div class="flow-step-desc">Blocking exceptions halt processing. Warnings allow continuation with flags.</div>
+      </div>
+    </div>
+    <div class="flow-connector"></div>
+    <div class="flow-step">
+      <div class="flow-step-num">6</div>
+      <div class="flow-step-content">
+        <div class="flow-step-title">Response + Workflow Routing</div>
+        <div class="flow-step-desc">Success → approval workflow. Blocked → exception queue. Rejected → retry prompt.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ 3. TECH STACK -->
+<section id="tech-stack" class="page-break">
+  <div class="section-eyebrow">Section 3</div>
+  <h2 class="section-title">Tech Stack</h2>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Layer</th><th>Technology</th><th>Version</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td>Frontend Framework</td><td>Next.js</td><td>16</td><td>App Router, RSC, API routes</td></tr>
+        <tr><td>UI Library</td><td>React</td><td>19</td><td>Server + Client components</td></tr>
+        <tr><td>Language</td><td>TypeScript</td><td>5.x</td><td>Full type safety</td></tr>
+        <tr><td>Styling</td><td>Tailwind CSS</td><td>v4</td><td>Utility-first, @theme tokens</td></tr>
+        <tr><td>Components</td><td>ShadCN UI</td><td>latest</td><td>Accessible component library</td></tr>
+        <tr><td>ORM</td><td>Prisma</td><td>6</td><td>Type-safe DB access, migrations</td></tr>
+        <tr><td>Database</td><td>PostgreSQL</td><td>16</td><td>Primary data store, RLS</td></tr>
+        <tr><td>Auth</td><td>NextAuth</td><td>v5</td><td>Session management, JWT</td></tr>
+        <tr><td>Automation</td><td>n8n</td><td>latest</td><td>AP invoice processing workflow</td></tr>
+        <tr><td>AI</td><td>Claude Haiku</td><td>4.5</td><td>Invoice data extraction</td></tr>
+        <tr><td>Charts</td><td>Recharts</td><td>latest</td><td>Dashboard analytics</td></tr>
+        <tr><td>Forms</td><td>React Hook Form</td><td>latest</td><td>Form management + Zod validation</td></tr>
+        <tr><td>PDF</td><td>PDF.js</td><td>latest</td><td>In-browser PDF viewer</td></tr>
+        <tr><td>File Upload</td><td>react-dropzone</td><td>latest</td><td>Drag & drop upload zone</td></tr>
+        <tr><td>Billing</td><td>Stripe</td><td>v3</td><td>Subscriptions, webhooks</td></tr>
+        <tr><td>Email</td><td>Resend</td><td>latest</td><td>Transactional email</td></tr>
+        <tr><td>Deployment</td><td>Docker + Traefik</td><td>latest</td><td>VPS containerization + SSL</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Frontend File Structure</h3>
+  <pre><code>src/
+├── app/
+│   ├── layout.tsx              <span class="code-gray"># Root layout, theme providers</span>
+│   ├── (auth)/
+│   │   ├── login/page.tsx
+│   │   └── signup/[step]/page.tsx
+│   ├── dashboard/page.tsx      <span class="code-gray"># Screen 1</span>
+│   ├── upload/page.tsx         <span class="code-gray"># Screen 2</span>
+│   ├── invoices/
+│   │   ├── page.tsx            <span class="code-gray"># Invoice list</span>
+│   │   └── [id]/page.tsx       <span class="code-gray"># Screen 3</span>
+│   ├── exceptions/page.tsx     <span class="code-gray"># Screen 5</span>
+│   ├── suppliers/page.tsx
+│   ├── workflows/page.tsx
+│   ├── settings/page.tsx
+│   └── api/
+│       ├── invoices/route.ts
+│       ├── exceptions/route.ts
+│       └── auth/route.ts
+├── components/
+│   ├── ui/                     <span class="code-gray"># ShadCN components</span>
+│   ├── dashboard/              <span class="code-gray"># KPICard, VolumeChart, ActivityFeed</span>
+│   ├── invoice/                <span class="code-gray"># PDFViewer, SATCard, ExceptionPanel</span>
+│   ├── upload/                 <span class="code-gray"># DropZone, ProcessingStepper</span>
+│   └── shared/                 <span class="code-gray"># Sidebar, Header, UserNav</span>
+├── lib/
+│   ├── prisma.ts
+│   ├── auth.ts
+│   └── validators.ts
+├── types/index.ts
+└── styles/globals.css</code></pre>
+</section>
+
+<!-- ═══════════════════════════════════════════ 4. DATABASE -->
+<section id="database" class="page-break">
+  <div class="section-eyebrow">Section 4</div>
+  <h2 class="section-title">Database Schema</h2>
+  <p class="section-subtitle">13 Prisma models with multi-tenant isolation via tenant_id foreign key.</p>
+
+  <h3>Models Overview</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Model</th><th>Table</th><th>Records</th><th>Key Relations</th></tr></thead>
+      <tbody>
+        <tr><td><code>Tenant</code></td><td>tenants</td><td>One per customer company</td><td>Has many Users, Invoices, Suppliers</td></tr>
+        <tr><td><code>User</code></td><td>users</td><td>Per-tenant staff</td><td>Belongs to Tenant, has Sessions</td></tr>
+        <tr><td><code>Session</code></td><td>sessions</td><td>Auth sessions</td><td>Belongs to User</td></tr>
+        <tr><td><code>PasswordResetToken</code></td><td>password_reset_tokens</td><td>Temp tokens</td><td>Belongs to User</td></tr>
+        <tr><td><code>Supplier</code></td><td>suppliers</td><td>Per-tenant vendors</td><td>Belongs to Tenant, has Invoices</td></tr>
+        <tr><td><code>SupplierUser</code></td><td>supplier_users</td><td>Supplier portal users</td><td>Belongs to Supplier</td></tr>
+        <tr><td><code>Invoice</code></td><td>invoices</td><td>Core record</td><td>Belongs to Tenant, Supplier</td></tr>
+        <tr><td><code>InvoiceDocument</code></td><td>invoice_documents</td><td>Attached files</td><td>Belongs to Invoice</td></tr>
+        <tr><td><code>InvoiceNote</code></td><td>invoice_notes</td><td>AP team notes</td><td>Belongs to Invoice, User</td></tr>
+        <tr><td><code>Exception</code></td><td>exceptions</td><td>Per-invoice exceptions</td><td>Belongs to Invoice</td></tr>
+        <tr><td><code>Workflow</code></td><td>workflows</td><td>Approval rules</td><td>Belongs to Tenant</td></tr>
+        <tr><td><code>AuditLog</code></td><td>audit_logs</td><td>All actions</td><td>Belongs to Tenant, User</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Key Model: Invoice</h3>
+  <pre><code><span class="code-blue">model</span> Invoice {
+  id              <span class="code-purple">String</span>          @id @default(cuid())
+  tenantId        <span class="code-purple">String</span>          <span class="code-gray">// Multi-tenant isolation</span>
+  supplierId      <span class="code-purple">String</span>?
+
+  <span class="code-green">// AI-Extracted Fields</span>
+  vendorName      <span class="code-purple">String</span>?
+  vendorCode      <span class="code-purple">String</span>?
+  invoiceNumber   <span class="code-purple">String</span>
+  invoiceDate     <span class="code-purple">DateTime</span>?
+  invoiceAmount   <span class="code-purple">Decimal</span>
+  currency        <span class="code-purple">String</span>          @default(<span class="code-yellow">"MXN"</span>)
+  taxAmount       <span class="code-purple">Decimal</span>?
+  taxRate         <span class="code-purple">Decimal</span>?
+
+  <span class="code-green">// Shipping References</span>
+  masterBL        <span class="code-purple">String</span>?
+  houseBL         <span class="code-purple">String</span>?
+  containerNumber <span class="code-purple">String</span>?
+  vesselName      <span class="code-purple">String</span>?
+  voyageNumber    <span class="code-purple">String</span>?
+
+  <span class="code-green">// SAT Validation</span>
+  satUUID         <span class="code-purple">String</span>?
+  satStatus       <span class="code-purple">SatStatus</span>       @default(PENDING)
+  satValidatedAt  <span class="code-purple">DateTime</span>?
+  satRawResponse  <span class="code-purple">Json</span>?
+  onListaNegra    <span class="code-purple">Boolean</span>        @default(false)
+
+  <span class="code-green">// Processing</span>
+  status          <span class="code-purple">InvoiceStatus</span>   @default(UPLOADED)
+  source          <span class="code-purple">InvoiceSource</span>   @default(UPLOAD)
+  n8nDocumentId   <span class="code-purple">String</span>?
+  cwConsolNo      <span class="code-purple">String</span>?
+  cwShipmentNo    <span class="code-purple">String</span>?
+  exceptionCount  <span class="code-purple">Int</span>            @default(0)
+  hasBlocking     <span class="code-purple">Boolean</span>        @default(false)
+
+  <span class="code-green">// Workflow</span>
+  assignedTo      <span class="code-purple">String</span>?
+  approvedBy      <span class="code-purple">String</span>?
+  approvedAt      <span class="code-purple">DateTime</span>?
+  rejectedBy      <span class="code-purple">String</span>?
+  rejectedAt      <span class="code-purple">DateTime</span>?
+  rejectionReason <span class="code-purple">String</span>?
+
+  createdAt       <span class="code-purple">DateTime</span>       @default(now())
+  updatedAt       <span class="code-purple">DateTime</span>       @updatedAt
+
+  tenant          Tenant          @relation(fields: [tenantId], references: [id])
+  supplier        Supplier?       @relation(fields: [supplierId], references: [id])
+  documents       InvoiceDocument[]
+  notes           InvoiceNote[]
+  exceptions      Exception[]
+}</code></pre>
+
+  <h3>Enums</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Enum</th><th>Values</th></tr></thead>
+      <tbody>
+        <tr><td><code>PlanTier</code></td><td>STARTER, PROFESSIONAL, ENTERPRISE</td></tr>
+        <tr><td><code>TenantStatus</code></td><td>TRIAL, ACTIVE, SUSPENDED, CANCELLED</td></tr>
+        <tr><td><code>UserRole</code></td><td>ADMIN, AP_MANAGER, AP_CLERK, VIEWER</td></tr>
+        <tr><td><code>InvoiceStatus</code></td><td>UPLOADED, PROCESSING, PENDING, APPROVED, REJECTED, BLOCKED</td></tr>
+        <tr><td><code>InvoiceSource</code></td><td>UPLOAD, API, EMAIL, SUPPLIER_PORTAL</td></tr>
+        <tr><td><code>SatStatus</code></td><td>PENDING, VALID, INVALID, CANCELLED</td></tr>
+        <tr><td><code>ExceptionSeverity</code></td><td>BLOCK, WARN</td></tr>
+        <tr><td><code>ExceptionStatus</code></td><td>OPEN, RESOLVED, DISMISSED</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ 5. API REFERENCE -->
+<section id="api" class="page-break">
+  <div class="section-eyebrow">Section 5</div>
+  <h2 class="section-title">API Reference</h2>
+  <p class="section-subtitle">All endpoints require Bearer token authentication unless noted. Base URL: <code>https://app.facturaflow.com/api</code></p>
+
+  <h3>Dashboard</h3>
+  <div class="endpoint">
+    <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/dashboard/stats</span><span class="endpoint-desc">KPI counts for current period</span></div>
+    <div class="endpoint-body"><p>Returns: pending, blocked, processed counts + amounts. Filtered by date range query param.</p></div>
+  </div>
+  <div class="endpoint">
+    <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/dashboard/charts</span><span class="endpoint-desc">Chart data for volume + exceptions</span></div>
+  </div>
+  <div class="endpoint">
+    <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/dashboard/activity</span><span class="endpoint-desc">Recent activity feed (last 10)</span></div>
+  </div>
+
+  <h3>Invoices</h3>
+  <div class="endpoint">
+    <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/invoices/upload</span><span class="endpoint-desc">Upload PDF + XML for processing</span></div>
+    <div class="endpoint-body"><p>Accepts <code>multipart/form-data</code> with <code>pdf</code> and <code>xml</code> fields. Triggers n8n webhook. Returns <code>invoiceId</code> for polling.</p></div>
+  </div>
+  <div class="endpoint">
+    <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/invoices</span><span class="endpoint-desc">List invoices with filters + pagination</span></div>
+    <div class="endpoint-body"><p>Query: <code>status</code>, <code>severity</code>, <code>page</code>, <code>limit</code>, <code>search</code>, <code>dateFrom</code>, <code>dateTo</code></p></div>
+  </div>
+  <div class="endpoint">
+    <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/invoices/:id</span><span class="endpoint-desc">Full invoice detail with exceptions</span></div>
+  </div>
+  <div class="endpoint">
+    <div class="endpoint-header"><span class="method patch">PATCH</span><span class="endpoint-path">/invoices/:id</span><span class="endpoint-desc">Update invoice fields (inline edit)</span></div>
+  </div>
+  <div class="endpoint">
+    <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/invoices/:id/approve</span><span class="endpoint-desc">Approve invoice (AP_MANAGER+)</span></div>
+  </div>
+  <div class="endpoint">
+    <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/invoices/:id/reject</span><span class="endpoint-desc">Reject with reason</span></div>
+  </div>
+  <div class="endpoint">
+    <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/invoices/:id/sat-validation</span><span class="endpoint-desc">SAT validation results</span></div>
+  </div>
+  <div class="endpoint">
+    <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/invoices/:id/sat-validation/revalidate</span><span class="endpoint-desc">Re-run SAT validation</span></div>
+  </div>
+
+  <h3>Exceptions</h3>
+  <div class="endpoint">
+    <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/exceptions</span><span class="endpoint-desc">Exception queue with filters</span></div>
+    <div class="endpoint-body"><p>Query: <code>severity</code>, <code>type</code>, <code>status</code>, <code>assignedTo</code>, <code>page</code>, <code>sort</code></p></div>
+  </div>
+  <div class="endpoint">
+    <div class="endpoint-header"><span class="method patch">PATCH</span><span class="endpoint-path">/exceptions/:id/resolve</span><span class="endpoint-desc">Resolve single exception</span></div>
+  </div>
+  <div class="endpoint">
+    <div class="endpoint-header"><span class="method patch">PATCH</span><span class="endpoint-path">/exceptions/bulk-assign</span><span class="endpoint-desc">Assign multiple exceptions</span></div>
+  </div>
+
+  <h3>Auth & Signup</h3>
+  <div class="endpoint">
+    <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/auth/signup</span><span class="endpoint-desc">Create tenant + admin user</span></div>
+  </div>
+  <div class="endpoint">
+    <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/auth/check-subdomain</span><span class="endpoint-desc">Check subdomain availability</span></div>
+  </div>
+  <div class="endpoint">
+    <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/auth/check-email</span><span class="endpoint-desc">Check email availability</span></div>
+  </div>
+
+  <h3>Billing</h3>
+  <div class="endpoint">
+    <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/billing/setup-intent</span><span class="endpoint-desc">Create Stripe SetupIntent for card</span></div>
+  </div>
+  <div class="endpoint">
+    <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/billing/webhook</span><span class="endpoint-desc">Stripe webhook handler (no auth)</span></div>
+    <div class="endpoint-body"><p>Handles: <code>customer.subscription.created/updated/deleted</code>, <code>invoice.payment_failed</code></p></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ 6. N8N WORKFLOW -->
+<section id="n8n-workflow" class="page-break">
+  <div class="section-eyebrow">Section 6</div>
+  <h2 class="section-title">n8n AP Invoice Processor</h2>
+  <p class="section-subtitle">Workflow ID: <code>YYUjYczdRH8kIfAG</code> — 24 nodes — Active on srv1139900</p>
+
+  <div class="callout success">
+    <div class="callout-icon">✅</div>
+    <div class="callout-body">
+      <div class="callout-title">Status: ACTIVE</div>
+      <p>Webhook URL: <code>https://n8n.srv1139900.hstgr.cloud/webhook/ap-invoice-process</code></p>
+    </div>
+  </div>
+
+  <h3>24-Node Architecture</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>#</th><th>Node Name</th><th>Type</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Webhook - Receive Invoice</td><td>webhook</td><td>Entry point, multipart or base64 JSON</td></tr>
+        <tr><td>2</td><td>Extract File Info & Generate ID</td><td>code</td><td>Parse input, generate <code>doc_YYYYMMDD_xxxxx</code> ID</td></tr>
+        <tr><td>3</td><td>Extract Text from PDF</td><td>extractFromFile</td><td>Raw text extraction from PDF binary</td></tr>
+        <tr><td>4</td><td>PDF Quality Gate</td><td>code</td><td>Check: word count ≥20 AND has numbers</td></tr>
+        <tr><td>5</td><td>IF - PDF Viable?</td><td>if</td><td>Branch: TRUE → AI extract, FALSE → reject</td></tr>
+        <tr><td>6</td><td>AI Extract Invoice Data</td><td>informationExtractor</td><td>15-field schema extraction with Claude Haiku</td></tr>
+        <tr><td>7</td><td>Anthropic Chat Model</td><td>lmChatAnthropic</td><td>Model: claude-haiku-4-5-20251001</td></tr>
+        <tr><td>8</td><td>AI Extraction Validation</td><td>code</td><td>Required: vendor, invoice#, amount, ref</td></tr>
+        <tr><td>9</td><td>IF - Extraction Valid?</td><td>if</td><td>Branch: TRUE → 8 parallel checks, FALSE → reject</td></tr>
+        <tr><td>10</td><td>Query AP - Purchasing Party</td><td>microsoftSql</td><td>Match vendor in CargoWise OrgHeader</td></tr>
+        <tr><td>11</td><td>Query Shipment</td><td>microsoftSql</td><td>Match BL/container in JobConsol/Shipment</td></tr>
+        <tr><td>12</td><td>Check Duplicate Invoice</td><td>microsoftSql</td><td>Query AccTransactionHeader for invoice#</td></tr>
+        <tr><td>13</td><td>Check Payment Status</td><td>microsoftSql</td><td>Check posted AP lines in AccTransactionLines</td></tr>
+        <tr><td>14</td><td>Check Amount Tolerance</td><td>microsoftSql</td><td>Compare vs expected JobCharge cost</td></tr>
+        <tr><td>15</td><td>Check Currency Mismatch</td><td>microsoftSql</td><td>Invoice currency vs CW charge currency</td></tr>
+        <tr><td>16</td><td>Check Tax IVA</td><td>code</td><td>Validate 16% Mexico IVA math</td></tr>
+        <tr><td>17</td><td>Check Shipment Dates</td><td>microsoftSql</td><td>Invoice date vs ETD/ETA reasonableness</td></tr>
+        <tr><td>18</td><td>Exception Evaluator</td><td>code</td><td>Aggregate all 8 checks, classify severity</td></tr>
+        <tr><td>19</td><td>IF - Blocked?</td><td>if</td><td>Branch on hasBlocking exception</td></tr>
+        <tr><td>20</td><td>Build Blocked Response</td><td>code</td><td>Format blocked JSON response</td></tr>
+        <tr><td>21</td><td>Build Success Response</td><td>code</td><td>Format success JSON response</td></tr>
+        <tr><td>22</td><td>Build Rejection Response</td><td>code</td><td>Format early-exit rejection</td></tr>
+        <tr><td>23</td><td>Respond to Webhook</td><td>respondToWebhook</td><td>Return final JSON</td></tr>
+        <tr><td>24</td><td>Audit Log</td><td>code</td><td>Prepare audit record (storage pending)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>AI Extraction Schema (15 Fields)</h3>
+  <pre><code>{
+  <span class="code-yellow">"vendor_name"</span>:           <span class="code-purple">string</span>,  <span class="code-green">// Required</span>
+  <span class="code-yellow">"vendor_code"</span>:           <span class="code-purple">string</span>,  <span class="code-green">// CW vendor code if on invoice</span>
+  <span class="code-yellow">"invoice_number"</span>:        <span class="code-purple">string</span>,  <span class="code-green">// Required</span>
+  <span class="code-yellow">"invoice_date"</span>:          <span class="code-purple">date</span>,    <span class="code-green">// YYYY-MM-DD format</span>
+  <span class="code-yellow">"invoice_amount"</span>:        <span class="code-purple">number</span>, <span class="code-green">// Required</span>
+  <span class="code-yellow">"currency"</span>:              <span class="code-purple">string</span>,  <span class="code-green">// USD | MXN | EUR</span>
+  <span class="code-yellow">"tax_amount"</span>:            <span class="code-purple">number</span>,
+  <span class="code-yellow">"tax_rate"</span>:              <span class="code-purple">number</span>,  <span class="code-green">// Expected 16 for Mexico IVA</span>
+  <span class="code-yellow">"master_bill_of_lading"</span>: <span class="code-purple">string</span>,
+  <span class="code-yellow">"house_bill_of_lading"</span>:  <span class="code-purple">string</span>,  <span class="code-green">// Required (shipping ref)</span>
+  <span class="code-yellow">"container_number"</span>:      <span class="code-purple">string</span>,
+  <span class="code-yellow">"vessel_name"</span>:           <span class="code-purple">string</span>,
+  <span class="code-yellow">"voyage_number"</span>:         <span class="code-purple">string</span>,
+  <span class="code-yellow">"consignee"</span>:             <span class="code-purple">string</span>,
+  <span class="code-yellow">"description"</span>:           <span class="code-purple">string</span>
+}</code></pre>
+
+  <h3>Response Time Performance</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Stage</th><th>Expected Time</th></tr></thead>
+      <tbody>
+        <tr><td>PDF text extraction</td><td>2–5 seconds</td></tr>
+        <tr><td>AI extraction (Claude Haiku)</td><td>3–8 seconds</td></tr>
+        <tr><td>8 parallel CW SQL queries</td><td>1–3 seconds</td></tr>
+        <tr><td><strong>Total end-to-end</strong></td><td><strong>8–20 seconds</strong></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ 7. SAT INTEGRATION -->
+<section id="sat-integration" class="page-break">
+  <div class="section-eyebrow">Section 7</div>
+  <h2 class="section-title">SAT Integration</h2>
+  <p class="section-subtitle">Mexico's Servicio de Administración Tributaria (SAT) tax authority integration for CFDI 4.0 validation.</p>
+
+  <h3>SAT Validation Checks</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Check</th><th>Method</th><th>Critical?</th><th>Failure Action</th></tr></thead>
+      <tbody>
+        <tr><td>Factura Found in SAT</td><td>SAT CFDI verification API</td><td>Yes</td><td>Block — may be fraudulent</td></tr>
+        <tr><td>Status: Vigente (Active)</td><td>SAT status query</td><td>Critical</td><td>Block + "DO NOT PAY" banner</td></tr>
+        <tr><td>UUID Matches</td><td>Compare extracted vs XML UUID</td><td>Yes</td><td>Block — data tampering</td></tr>
+        <tr><td>Emisor RFC Valid</td><td>SAT RFC lookup</td><td>Yes</td><td>Block — invalid vendor</td></tr>
+        <tr><td>Receptor RFC Matches</td><td>Compare vs tenant RFC setting</td><td>Yes</td><td>Block — wrong recipient</td></tr>
+        <tr><td>Lista Negra</td><td>SAT blacklist DB query</td><td>Critical</td><td>Block + "VENDOR BLACKLISTED" alert</td></tr>
+        <tr><td>CFDI Version</td><td>XML version attribute</td><td>No</td><td>Warn if 3.3, fail if older</td></tr>
+        <tr><td>Total Amount Match</td><td>Compare PDF vs XML amounts</td><td>Yes</td><td>Warn or block depending on variance</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Lista Negra (SAT Blacklist)</h3>
+  <p>SAT maintains two blacklists of companies involved in tax fraud:</p>
+  <ul>
+    <li><strong>Presuntos (Presumed)</strong> — Companies suspected of issuing fraudulent invoices. Published in DOF (Diario Oficial de la Federación).</li>
+    <li><strong>Definitivos (Confirmed)</strong> — Companies confirmed as having issued illegal invoices. Paying these invoices is a tax violation.</li>
+    <li><strong>Desvirtuados</strong> — Companies that successfully challenged the presumption.</li>
+    <li><strong>Sentenciados</strong> — Companies found guilty in fiscal court.</li>
+  </ul>
+
+  <div class="callout danger">
+    <div class="callout-icon">⛔</div>
+    <div class="callout-body">
+      <div class="callout-title">Legal Risk: Lista Negra</div>
+      <p>Mexican companies that knowingly pay invoices from Lista Negra vendors may face fines, tax credits rejection, and in severe cases criminal prosecution under Article 69-B of the Mexican Tax Code (CFF).</p>
+    </div>
+  </div>
+
+  <h3>CFDI 4.0 XML Structure</h3>
+  <pre><code><span class="code-blue">&lt;cfdi:Comprobante</span>
+  <span class="code-green">Version</span>=<span class="code-yellow">"4.0"</span>
+  <span class="code-green">Folio</span>=<span class="code-yellow">"INV-2026-001"</span>
+  <span class="code-green">Fecha</span>=<span class="code-yellow">"2026-02-15T12:00:00"</span>
+  <span class="code-green">Total</span>=<span class="code-yellow">"2900.00"</span>
+  <span class="code-green">SubTotal</span>=<span class="code-yellow">"2500.00"</span>
+  <span class="code-green">Moneda</span>=<span class="code-yellow">"USD"</span>
+  <span class="code-green">UUID</span>=<span class="code-yellow">"550e8400-e29b-41d4-a716-446655440000"</span><span class="code-blue">&gt;</span>
+
+  <span class="code-blue">&lt;cfdi:Emisor</span>
+    <span class="code-green">Rfc</span>=<span class="code-yellow">"ACME8501015JA"</span>
+    <span class="code-green">Nombre</span>=<span class="code-yellow">"ACME Shipping SA de CV"</span>
+    <span class="code-green">RegimenFiscal</span>=<span class="code-yellow">"601"</span><span class="code-blue">/&gt;</span>
+
+  <span class="code-blue">&lt;cfdi:Receptor</span>
+    <span class="code-green">Rfc</span>=<span class="code-yellow">"WSI910215X43"</span>
+    <span class="code-green">Nombre</span>=<span class="code-yellow">"WSI Freight Forwarding SA"</span>
+    <span class="code-green">UsoCFDI</span>=<span class="code-yellow">"G03"</span><span class="code-blue">/&gt;</span>
+
+  <span class="code-blue">&lt;cfdi:Impuestos</span> <span class="code-green">TotalImpuestosTrasladados</span>=<span class="code-yellow">"400.00"</span><span class="code-blue">&gt;</span>
+    <span class="code-blue">&lt;cfdi:Traslado</span> <span class="code-green">Impuesto</span>=<span class="code-yellow">"002"</span> <span class="code-green">TasaOCuota</span>=<span class="code-yellow">"0.160000"</span><span class="code-blue">/&gt;</span>
+  <span class="code-blue">&lt;/cfdi:Impuestos&gt;</span>
+<span class="code-blue">&lt;/cfdi:Comprobante&gt;</span></code></pre>
+</section>
+
+<!-- ═══════════════════════════════════════════ 8. EXCEPTIONS -->
+<section id="exceptions" class="page-break">
+  <div class="section-eyebrow">Section 8</div>
+  <h2 class="section-title">Exception System</h2>
+  <p class="section-subtitle">3 blocking exceptions halt processing. 5 warning exceptions allow continuation with flags.</p>
+
+  <h3>Exception Reference</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Code</th><th>Severity</th><th>Condition</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr class="exception-row-block">
+          <td>DUPLICATE_INVOICE</td>
+          <td><span class="badge red">⛔ Block</span></td>
+          <td>Invoice # exists in CargoWise AccTransactionHeader</td>
+          <td>Halt processing, require admin override</td>
+        </tr>
+        <tr class="exception-row-block">
+          <td>ALREADY_PAID</td>
+          <td><span class="badge red">⛔ Block</span></td>
+          <td>Vendor AP lines already posted in CW</td>
+          <td>Halt processing, show posted transaction</td>
+        </tr>
+        <tr class="exception-row-block">
+          <td>AMOUNT_TOLERANCE (>25%)</td>
+          <td><span class="badge red">⛔ Block</span></td>
+          <td>Invoice amount >25% above expected cost</td>
+          <td>Halt, require manager approval</td>
+        </tr>
+        <tr class="exception-row-warn">
+          <td>AMOUNT_TOLERANCE (10-25%)</td>
+          <td><span class="badge yellow">⚠️ Warn</span></td>
+          <td>Invoice amount 10–25% above expected cost</td>
+          <td>Flag for review, can approve</td>
+        </tr>
+        <tr class="exception-row-warn">
+          <td>CURRENCY_MISMATCH</td>
+          <td><span class="badge yellow">⚠️ Warn</span></td>
+          <td>Invoice currency ≠ CW charge currency</td>
+          <td>Flag, verify exchange rate</td>
+        </tr>
+        <tr class="exception-row-warn">
+          <td>TAX_IVA</td>
+          <td><span class="badge yellow">⚠️ Warn</span></td>
+          <td>Tax rate ≠ 16% OR math calculation error</td>
+          <td>Flag, verify IVA compliance</td>
+        </tr>
+        <tr class="exception-row-warn">
+          <td>DATE_BEFORE_DEPARTURE</td>
+          <td><span class="badge yellow">⚠️ Warn</span></td>
+          <td>Invoice date &lt; shipment ETD</td>
+          <td>Flag, may indicate pre-billing</td>
+        </tr>
+        <tr class="exception-row-warn">
+          <td>DATE_TOO_OLD</td>
+          <td><span class="badge yellow">⚠️ Warn</span></td>
+          <td>Invoice date &gt;180 days after arrival</td>
+          <td>Flag, verify tax deductibility</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Process Result Logic</h3>
+  <div class="flow-diagram">
+    <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--gray-700); line-height: 2;">
+      <div>IF any <span style="color:var(--red); font-weight:700;">stop_processing = true</span> → result = <span style="color:var(--red)">EXCEPTION</span></div>
+      <div>ELSE IF FRT type AND telex release missing → result = <span style="color:var(--yellow)">FINANCIAL_PENDING</span></div>
+      <div>ELSE IF any warnings AND no blocking → result = <span style="color:var(--blue)">PARTIAL_SUCCESS</span></div>
+      <div>ELSE → result = <span style="color:var(--primary)">SUCCESS</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ 9. SCREENS -->
+<section id="screens" class="page-break">
+  <div class="section-eyebrow">Section 9</div>
+  <h2 class="section-title">Screen Specifications</h2>
+  <p class="section-subtitle">28 MVP screens across 10 modules. Full platform has 80 screens.</p>
+
+  <h3>MVP Screens (28 screens)</h3>
+  <div class="screen-grid">
+    <div class="screen-card">
+      <div class="screen-card-header"><div class="screen-card-num">1</div><div class="screen-card-title">Dashboard</div></div>
+      <div class="screen-card-body"><ul>
+        <li>4 KPI cards (pending, blocked, processed, avg time)</li>
+        <li>Invoice volume line chart (30 days)</li>
+        <li>Exception breakdown donut chart</li>
+        <li>Recent activity feed (last 10)</li>
+        <li>Quick actions sidebar</li>
+      </ul></div>
+    </div>
+    <div class="screen-card">
+      <div class="screen-card-header"><div class="screen-card-num">2</div><div class="screen-card-title">Invoice Upload</div></div>
+      <div class="screen-card-body"><ul>
+        <li>Drag &amp; drop zone (PDF + XML)</li>
+        <li>File requirements panel</li>
+        <li>5-step processing stepper</li>
+        <li>Success/blocked/rejected result panels</li>
+        <li>Real-time polling every 2s</li>
+      </ul></div>
+    </div>
+    <div class="screen-card">
+      <div class="screen-card-header"><div class="screen-card-num">3</div><div class="screen-card-title">Invoice Detail</div></div>
+      <div class="screen-card-body"><ul>
+        <li>Split screen (40% PDF viewer, 60% data)</li>
+        <li>SAT validation card with all checks</li>
+        <li>Inline editable invoice fields</li>
+        <li>CW ERP matching card</li>
+        <li>Exception panel (collapsible)</li>
+        <li>Sticky approve/reject footer</li>
+      </ul></div>
+    </div>
+    <div class="screen-card">
+      <div class="screen-card-header"><div class="screen-card-num">4</div><div class="screen-card-title">SAT Validation Modal</div></div>
+      <div class="screen-card-body"><ul>
+        <li>Large modal (80% width)</li>
+        <li>8 individual check items</li>
+        <li>Formatted XML viewer (3 tabs)</li>
+        <li>"DO NOT PAY" banner for critical failures</li>
+        <li>Revalidate button</li>
+      </ul></div>
+    </div>
+    <div class="screen-card">
+      <div class="screen-card-header"><div class="screen-card-num">5</div><div class="screen-card-title">Exception Queue</div></div>
+      <div class="screen-card-body"><ul>
+        <li>Left filter sidebar (severity, type, status, date)</li>
+        <li>Dense sortable table (8 columns)</li>
+        <li>Bulk actions bar (select all, assign, export)</li>
+        <li>Resolve modal with resolution types</li>
+        <li>Quick stats row above table</li>
+      </ul></div>
+    </div>
+    <div class="screen-card">
+      <div class="screen-card-header"><div class="screen-card-num">6</div><div class="screen-card-title">Sign Up Flow</div></div>
+      <div class="screen-card-body"><ul>
+        <li>4-step wizard with progress indicator</li>
+        <li>Step 1: Company info + subdomain check</li>
+        <li>Step 2: Admin user creation</li>
+        <li>Step 3: Plan selection (3 cards)</li>
+        <li>Step 4: Optional payment (Stripe)</li>
+        <li>Step 5: Success + next steps</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <h3>Additional MVP Screens (7–28)</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>#</th><th>Screen</th><th>Module</th></tr></thead>
+      <tbody>
+        <tr><td>7</td><td>Invoice List</td><td>Invoice Management</td></tr>
+        <tr><td>8</td><td>Invoice Audit Trail</td><td>Invoice Management</td></tr>
+        <tr><td>9</td><td>SAT Settings</td><td>Settings</td></tr>
+        <tr><td>10</td><td>Users & Roles</td><td>Settings</td></tr>
+        <tr><td>11</td><td>Supplier List</td><td>Supplier Management</td></tr>
+        <tr><td>12</td><td>Supplier Detail</td><td>Supplier Management</td></tr>
+        <tr><td>13</td><td>Supplier Portal Login</td><td>Supplier Portal</td></tr>
+        <tr><td>14</td><td>Supplier Portal Dashboard</td><td>Supplier Portal</td></tr>
+        <tr><td>15</td><td>Workflow Builder</td><td>Automation</td></tr>
+        <tr><td>16</td><td>Workflow Templates</td><td>Automation</td></tr>
+        <tr><td>17</td><td>Notifications Config</td><td>Settings</td></tr>
+        <tr><td>18</td><td>Billing Dashboard</td><td>SaaS Billing</td></tr>
+        <tr><td>19</td><td>Plan Upgrade/Downgrade</td><td>SaaS Billing</td></tr>
+        <tr><td>20</td><td>Invoice History (billing)</td><td>SaaS Billing</td></tr>
+        <tr><td>21</td><td>Onboarding Checklist</td><td>Onboarding</td></tr>
+        <tr><td>22</td><td>Trial Dashboard</td><td>Onboarding</td></tr>
+        <tr><td>23</td><td>Reports Overview</td><td>Analytics</td></tr>
+        <tr><td>24</td><td>Exception Report</td><td>Analytics</td></tr>
+        <tr><td>25</td><td>Vendor Analysis</td><td>Analytics</td></tr>
+        <tr><td>26</td><td>API Keys</td><td>Settings</td></tr>
+        <tr><td>27</td><td>Webhooks Config</td><td>Settings</td></tr>
+        <tr><td>28</td><td>Team Management</td><td>Settings</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ 10. DESIGN SYSTEM -->
+<section id="design-system" class="page-break">
+  <div class="section-eyebrow">Section 10</div>
+  <h2 class="section-title">Design System</h2>
+
+  <h3>Color Palette</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Token</th><th>Value</th><th>Usage</th></tr></thead>
+      <tbody>
+        <tr><td><code>--primary-500</code></td><td style="background:#16a34a; color:white; padding:4px 8px; border-radius:4px;">#16a34a</td><td>Buttons, links, active states</td></tr>
+        <tr><td><code>--primary-600</code></td><td style="background:#15803d; color:white; padding:4px 8px; border-radius:4px;">#15803d</td><td>Hover state</td></tr>
+        <tr><td><code>--primary-50</code></td><td style="background:#f0fdf4; color:#14532d; padding:4px 8px; border-radius:4px;">#f0fdf4</td><td>Light backgrounds</td></tr>
+        <tr><td><code>--red-500</code></td><td style="background:#ef4444; color:white; padding:4px 8px; border-radius:4px;">#ef4444</td><td>Blocking exceptions, errors</td></tr>
+        <tr><td><code>--yellow-500</code></td><td style="background:#f59e0b; color:white; padding:4px 8px; border-radius:4px;">#f59e0b</td><td>Warnings, attention</td></tr>
+        <tr><td><code>--blue-500</code></td><td style="background:#3b82f6; color:white; padding:4px 8px; border-radius:4px;">#3b82f6</td><td>Info, pending states</td></tr>
+        <tr><td><code>--gray-900</code></td><td style="background:#111827; color:white; padding:4px 8px; border-radius:4px;">#111827</td><td>Primary text</td></tr>
+        <tr><td><code>--gray-50</code></td><td style="background:#f9fafb; color:#111827; padding:4px 8px; border-radius:4px; border:1px solid #e5e7eb">#f9fafb</td><td>Page background</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Typography</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Style</th><th>Font</th><th>Size</th><th>Weight</th><th>Usage</th></tr></thead>
+      <tbody>
+        <tr><td>Display</td><td>Outfit</td><td>48px</td><td>800</td><td>Hero headlines, cover</td></tr>
+        <tr><td>H1</td><td>Outfit</td><td>32px</td><td>700</td><td>Page titles</td></tr>
+        <tr><td>H2</td><td>Outfit</td><td>24px</td><td>600</td><td>Section headings</td></tr>
+        <tr><td>H3</td><td>Outfit</td><td>20px</td><td>600</td><td>Card titles</td></tr>
+        <tr><td>H4</td><td>Outfit</td><td>18px</td><td>500</td><td>Sub-section headings</td></tr>
+        <tr><td>Body 1</td><td>Inter</td><td>16px</td><td>400</td><td>Primary body text</td></tr>
+        <tr><td>Body 2</td><td>Inter</td><td>14px</td><td>400</td><td>Secondary text, table data</td></tr>
+        <tr><td>Caption</td><td>Inter</td><td>12px</td><td>400</td><td>Labels, helper text</td></tr>
+        <tr><td>Code</td><td>JetBrains Mono</td><td>13px</td><td>400</td><td>Invoice #, UUIDs, XML</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Component Inventory</h3>
+  <p>All components are ShadCN UI-based with FacturaFlow overrides:</p>
+  <div style="display:flex; flex-wrap:wrap; gap:8px; margin:16px 0 32px;">
+    <span class="badge blue">Button (5 variants)</span>
+    <span class="badge blue">Input (6 types)</span>
+    <span class="badge blue">Card (header/body/footer)</span>
+    <span class="badge blue">Badge (5 colors)</span>
+    <span class="badge blue">Table (sortable, pagination)</span>
+    <span class="badge blue">Modal/Dialog</span>
+    <span class="badge blue">Toast</span>
+    <span class="badge blue">Tabs</span>
+    <span class="badge blue">Accordion</span>
+    <span class="badge blue">Progress Bar</span>
+    <span class="badge blue">Avatar</span>
+    <span class="badge blue">Tooltip</span>
+    <span class="badge blue">Dropdown Menu</span>
+    <span class="badge blue">Date Picker</span>
+    <span class="badge blue">File Dropzone</span>
+    <span class="badge blue">Stepper</span>
+  </div>
+
+  <h3>Responsive Breakpoints</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Breakpoint</th><th>Width</th><th>Layout Changes</th></tr></thead>
+      <tbody>
+        <tr><td>Mobile</td><td>&lt;768px</td><td>1-col, sidebar hidden, table → cards, charts horizontal scroll</td></tr>
+        <tr><td>Tablet</td><td>768–1024px</td><td>2-col KPIs, sidebar collapses, split screen 50/50</td></tr>
+        <tr><td>Desktop</td><td>&gt;1024px</td><td>Full layout as designed</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ 11. DEPLOYMENT -->
+<section id="deployment" class="page-break">
+  <div class="section-eyebrow">Section 11</div>
+  <h2 class="section-title">Deployment Guide</h2>
+
+  <h3>Infrastructure (MVP — VPS)</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Service</th><th>Host</th><th>Port</th><th>Domain</th></tr></thead>
+      <tbody>
+        <tr><td>FacturaFlow App</td><td>srv1139900 (31.97.211.9)</td><td>3006</td><td>facturaflow.handymanny.cloud</td></tr>
+        <tr><td>PostgreSQL</td><td>Docker: facturaflow-postgres</td><td>5432</td><td>internal</td></tr>
+        <tr><td>n8n Automation</td><td>srv1139900</td><td>5678</td><td>n8n.srv1139900.hstgr.cloud</td></tr>
+        <tr><td>Traefik (SSL)</td><td>srv1139900</td><td>80/443</td><td>*.handymanny.cloud</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Docker Configuration</h3>
+  <pre><code><span class="code-green"># docker-compose.yml</span>
+<span class="code-blue">services:</span>
+  <span class="code-yellow">facturaflow:</span>
+    <span class="code-green">build: .</span>
+    <span class="code-green">restart: unless-stopped</span>
+    <span class="code-green">environment:</span>
+      <span class="code-green">- DATABASE_URL=postgresql://facturaflow:password@facturaflow-postgres:5432/facturaflow</span>
+      <span class="code-green">- NEXTAUTH_URL=https://facturaflow.handymanny.cloud</span>
+      <span class="code-green">- NEXTAUTH_SECRET=your_secret_here</span>
+      <span class="code-green">- ANTHROPIC_API_KEY=sk-ant-...</span>
+      <span class="code-green">- STRIPE_SECRET_KEY=sk_live_...</span>
+      <span class="code-green">- N8N_WEBHOOK_URL=https://n8n.srv1139900.hstgr.cloud</span>
+    <span class="code-green">labels:</span>
+      <span class="code-green">- "traefik.enable=true"</span>
+      <span class="code-green">- "traefik.http.routers.facturaflow.rule=Host(`facturaflow.handymanny.cloud`)"</span>
+      <span class="code-green">- "traefik.http.routers.facturaflow.tls.certresolver=letsencrypt"</span>
+    <span class="code-green">networks:</span>
+      <span class="code-green">- root_default</span>
+
+  <span class="code-yellow">facturaflow-postgres:</span>
+    <span class="code-green">image: postgres:16-alpine</span>
+    <span class="code-green">restart: unless-stopped</span>
+    <span class="code-green">volumes:</span>
+      <span class="code-green">- facturaflow-data:/var/lib/postgresql/data</span>
+    <span class="code-green">networks:</span>
+      <span class="code-green">- root_default</span></code></pre>
+
+  <h3>Deploy Script</h3>
+  <pre><code><span class="code-gray">#!/bin/bash</span>
+<span class="code-gray"># ~/projects/facturaflow/deploy.sh</span>
+
+<span class="code-blue">cd</span> /docker/facturaflow
+git pull origin main
+docker compose build --no-cache
+docker compose down
+docker compose up -d
+docker exec facturaflow-app npx prisma migrate deploy
+echo <span class="code-yellow">"✅ FacturaFlow deployed"</span></code></pre>
+
+  <h3>Environment Variables</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Variable</th><th>Required</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>DATABASE_URL</code></td><td><span class="badge red">Required</span></td><td>PostgreSQL connection string</td></tr>
+        <tr><td><code>NEXTAUTH_SECRET</code></td><td><span class="badge red">Required</span></td><td>32-char random string for JWT signing</td></tr>
+        <tr><td><code>NEXTAUTH_URL</code></td><td><span class="badge red">Required</span></td><td>Public app URL</td></tr>
+        <tr><td><code>ANTHROPIC_API_KEY</code></td><td><span class="badge red">Required</span></td><td>Claude API key for AI extraction</td></tr>
+        <tr><td><code>STRIPE_SECRET_KEY</code></td><td><span class="badge yellow">SaaS only</span></td><td>Stripe secret key for billing</td></tr>
+        <tr><td><code>STRIPE_WEBHOOK_SECRET</code></td><td><span class="badge yellow">SaaS only</span></td><td>Stripe webhook signing secret</td></tr>
+        <tr><td><code>N8N_WEBHOOK_URL</code></td><td><span class="badge red">Required</span></td><td>n8n instance base URL</td></tr>
+        <tr><td><code>RESEND_API_KEY</code></td><td><span class="badge blue">Optional</span></td><td>Email notifications</td></tr>
+        <tr><td><code>SAT_API_KEY</code></td><td><span class="badge yellow">Phase 2</span></td><td>SAT government API credentials</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ 12. SAAS & BILLING -->
+<section id="saas" class="page-break">
+  <div class="section-eyebrow">Section 12</div>
+  <h2 class="section-title">SaaS & Billing</h2>
+
+  <h3>Pricing Plans</h3>
+  <div class="pricing-grid">
+    <div class="pricing-card">
+      <div class="plan-name">Starter</div>
+      <div class="plan-price">$99<span>/month</span></div>
+      <div class="plan-invoices">100 invoices/month · $1.50/overage</div>
+      <div class="plan-feature"><span class="check">✓</span> SAT Validation</div>
+      <div class="plan-feature"><span class="check">✓</span> Lista Negra Check</div>
+      <div class="plan-feature"><span class="check">✓</span> AI Extraction</div>
+      <div class="plan-feature"><span class="check">✓</span> 5 Workflows</div>
+      <div class="plan-feature"><span class="check">✓</span> 3 Users</div>
+      <div class="plan-feature"><span class="cross">✗</span> Supplier Portal</div>
+      <div class="plan-feature"><span class="cross">✗</span> API Access</div>
+      <div class="plan-feature"><span class="cross">✗</span> White-Label</div>
+    </div>
+    <div class="pricing-card featured">
+      <div class="popular-badge">Most Popular</div>
+      <div class="plan-name">Professional</div>
+      <div class="plan-price">$299<span>/month</span></div>
+      <div class="plan-invoices">500 invoices/month · $1.00/overage</div>
+      <div class="plan-feature"><span class="check">✓</span> All Starter Features</div>
+      <div class="plan-feature"><span class="check">✓</span> Unlimited Workflows</div>
+      <div class="plan-feature"><span class="check">✓</span> Supplier Portal</div>
+      <div class="plan-feature"><span class="check">✓</span> API Access</div>
+      <div class="plan-feature"><span class="check">✓</span> 10 Users</div>
+      <div class="plan-feature"><span class="check">✓</span> ERP Integration</div>
+      <div class="plan-feature"><span class="cross">✗</span> White-Label</div>
+    </div>
+    <div class="pricing-card">
+      <div class="plan-name">Enterprise</div>
+      <div class="plan-price">$899<span>/month</span></div>
+      <div class="plan-invoices">2,000 invoices/month · $0.75/overage</div>
+      <div class="plan-feature"><span class="check">✓</span> All Pro Features</div>
+      <div class="plan-feature"><span class="check">✓</span> White-Label</div>
+      <div class="plan-feature"><span class="check">✓</span> Custom Domain</div>
+      <div class="plan-feature"><span class="check">✓</span> SSO (SAML)</div>
+      <div class="plan-feature"><span class="check">✓</span> Unlimited Users</div>
+      <div class="plan-feature"><span class="check">✓</span> Phone Support</div>
+      <div class="plan-feature"><span class="check">✓</span> 99.9% SLA</div>
+    </div>
+  </div>
+
+  <h3>Stripe Webhooks</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Event</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td><code>customer.subscription.created</code></td><td>Activate tenant, send welcome email</td></tr>
+        <tr><td><code>customer.subscription.updated</code></td><td>Update plan_tier in tenants table</td></tr>
+        <tr><td><code>customer.subscription.deleted</code></td><td>Set tenant status = CANCELLED</td></tr>
+        <tr><td><code>invoice.payment_failed</code></td><td>Send payment reminder, suspend after 7 days</td></tr>
+        <tr><td><code>customer.subscription.trial_will_end</code></td><td>Send 3-day trial expiry warning</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Revenue Projections</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Period</th><th>Customers</th><th>MRR</th><th>ARR</th></tr></thead>
+      <tbody>
+        <tr><td>Months 1–3</td><td>6</td><td>$1,200</td><td>$14,400</td></tr>
+        <tr><td>Months 4–6</td><td>21</td><td>$4,200</td><td>$50,400</td></tr>
+        <tr><td>Months 7–9</td><td>45</td><td>$9,000</td><td>$108,000</td></tr>
+        <tr><td>Months 10–12</td><td>75</td><td>$15,000</td><td>$180,000</td></tr>
+        <tr><td>Year 2</td><td>250</td><td>$50,000</td><td>$600,000</td></tr>
+        <tr><td>Year 3</td><td>500</td><td>$100,000</td><td>$1,200,000</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ 13. ROADMAP -->
+<section id="roadmap" class="page-break">
+  <div class="section-eyebrow">Section 13</div>
+  <h2 class="section-title">Development Roadmap</h2>
+
+  <h3>MVP Build Timeline (16 weeks)</h3>
+  <div class="timeline">
+    <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-title">Weeks 1–2: Foundation</div><div class="timeline-desc">Multi-tenant PostgreSQL schema, NextAuth v5, Stripe account setup, Docker configuration</div></div></div>
+    <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-title">Weeks 3–4: SAT Integration</div><div class="timeline-desc">CFDI 4.0 validation API, XML parsing, Lista Negra database, test with 50 real invoices</div></div></div>
+    <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-title">Weeks 5–6: Invoice Processing</div><div class="timeline-desc">Upload screen, n8n webhook integration, AI extraction, exception detection, invoice detail screen</div></div></div>
+    <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-title">Weeks 7–8: Workflow Builder</div><div class="timeline-desc">Visual flow editor (React Flow), 5 pre-built templates, if/then conditions, SAT validation action</div></div></div>
+    <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-title">Weeks 9–10: Exception Management</div><div class="timeline-desc">Exception queue with filters, task assignment, email notifications, bulk actions</div></div></div>
+    <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-title">Weeks 11–12: Billing & Onboarding</div><div class="timeline-desc">Stripe checkout, trial signup flow, onboarding wizard, plan upgrade/downgrade</div></div></div>
+    <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-title">Weeks 13–14: Dashboard & Analytics</div><div class="timeline-desc">KPI cards, recharts volume/exception charts, tenant admin panel, real-time SSE updates</div></div></div>
+    <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-title">Weeks 15–16: Marketing Site & Launch</div><div class="timeline-desc">Homepage + pricing, 5 SEO blog posts in Spanish, beta with WSI + 4 customers, public launch</div></div></div>
+  </div>
+
+  <h3>Post-MVP Phases</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Phase</th><th>Timeline</th><th>Key Features</th></tr></thead>
+      <tbody>
+        <tr><td>Phase 2: Supplier Portal</td><td>Months 4–6</td><td>Supplier login, payment date visibility, document upload, invoice status tracking</td></tr>
+        <tr><td>Phase 3: ERP Integration</td><td>Months 7–9</td><td>CargoWise connector, QuickBooks Online, SAP Business One</td></tr>
+        <tr><td>Phase 4: Advanced AI</td><td>Months 10–12</td><td>3-way match, payment prediction ML, POD validation, advanced analytics</td></tr>
+        <tr><td>Phase 5: Scale</td><td>Year 2+</td><td>US market expansion, sales team, reseller partnerships, Series A fundraising</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Current Status (March 2026)</h3>
+  <div class="callout success">
+    <div class="callout-icon">🚀</div>
+    <div class="callout-body">
+      <div class="callout-title">MVP In Progress — Dashboard Screen DONE</div>
+      <p>Scaffold built with working dashboard (VolumeChart, KPI cards, activity feed). n8n AP Invoice Processor active (ID: YYUjYczdRH8kIfAG). Next: Invoice Upload screen (Screen 2).</p>
+    </div>
+  </div>
+
+  <h3>Immediate Next Steps</h3>
+  <ol>
+    <li>Build Screen 2: Invoice Upload (drag &amp; drop PDF + XML, processing stepper)</li>
+    <li>Wire up n8n AP Invoice Processor webhook</li>
+    <li>Build Screen 3: Invoice Detail (split screen, SAT card, inline edit)</li>
+    <li>Build Screen 5: Exception Queue (table, filters, bulk actions)</li>
+    <li>Deploy to VPS (port 3006, facturaflow.handymanny.cloud)</li>
+    <li>Test with real WSI AP invoices</li>
+  </ol>
+</section>
+
+<!-- ═══════════════════════════════════════════ FOOTER -->
+<div class="doc-footer">
+  <div><span class="brand">FacturaFlow</span> — AP Invoice Automation Platform</div>
+  <div>Technical Documentation v1.0 · March 2026</div>
+  <div>CONFIDENTIAL — Internal Use Only</div>
+</div>
+
+</div><!-- /main-content -->
+
+<script>
+// Highlight active nav item on scroll
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('nav.sidebar a');
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.id;
+      navLinks.forEach(link => {
+        link.style.color = link.getAttribute('href') === '#' + id ? '#4ade80' : '';
+        link.style.background = link.getAttribute('href') === '#' + id ? 'rgba(255,255,255,0.07)' : '';
+      });
+    }
+  });
+}, { threshold: 0.2 });
+
+sections.forEach(section => observer.observe(section));
+</script>
+</body>
+</html>

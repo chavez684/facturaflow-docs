@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FacturaFlow — Screen 2: Invoice Upload</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+  :root {
+    --primary:#16a34a;--primary-dark:#15803d;--primary-light:#dcfce7;--primary-50:#f0fdf4;
+    --red:#ef4444;--red-light:#fee2e2;--yellow:#f59e0b;--blue:#3b82f6;
+    --gray-900:#111827;--gray-700:#374151;--gray-600:#4b5563;--gray-500:#6b7280;
+    --gray-400:#9ca3af;--gray-300:#d1d5db;--gray-200:#e5e7eb;--gray-100:#f3f4f6;--gray-50:#f9fafb;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Inter',sans-serif;background:var(--gray-50);color:var(--gray-900);font-size:14px;display:flex;min-height:100vh;}
+
+  aside{width:220px;background:white;border-right:1px solid var(--gray-200);flex-shrink:0;}
+  .logo{padding:20px 16px;border-bottom:1px solid var(--gray-100);display:flex;align-items:center;gap:10px;}
+  .logo-icon{width:32px;height:32px;background:var(--primary);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;color:white;}
+  .logo-text{font-family:'Outfit',sans-serif;font-size:17px;font-weight:700;color:var(--gray-900);}
+  .logo-text span{color:var(--primary);}
+  nav{padding:12px 8px;}
+  .nav-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:6px;color:var(--gray-600);font-size:13px;font-weight:500;cursor:pointer;margin-bottom:2px;}
+  .nav-item.active{background:var(--primary-50);color:var(--primary);}
+  .nav-item:hover{background:var(--gray-50);color:var(--gray-900);}
+
+  main{flex:1;display:flex;flex-direction:column;}
+  .topbar{background:white;border-bottom:1px solid var(--gray-200);padding:0 24px;height:56px;display:flex;align-items:center;gap:16px;flex-shrink:0;}
+  .back-btn{display:flex;align-items:center;gap:6px;color:var(--gray-600);font-size:13px;cursor:pointer;padding:6px 10px;border-radius:6px;border:1px solid var(--gray-200);background:white;}
+  .topbar-title{font-family:'Outfit',sans-serif;font-size:18px;font-weight:700;color:var(--gray-900);}
+
+  .content{flex:1;overflow-y:auto;padding:32px;display:flex;justify-content:center;}
+  .upload-wrap{width:100%;max-width:720px;}
+
+  /* HEADER */
+  .upload-header{margin-bottom:32px;}
+  .upload-header h1{font-family:'Outfit',sans-serif;font-size:28px;font-weight:700;color:var(--gray-900);margin-bottom:6px;}
+  .upload-header p{color:var(--gray-500);font-size:15px;}
+
+  /* DROP ZONE */
+  .drop-zone{
+    border:2px dashed var(--primary);border-radius:16px;
+    background:white;padding:48px;text-align:center;
+    cursor:pointer;transition:all 0.2s;margin-bottom:20px;
+  }
+  .drop-zone:hover{background:var(--primary-50);border-style:solid;}
+  .drop-icon{font-size:48px;margin-bottom:16px;}
+  .drop-title{font-family:'Outfit',sans-serif;font-size:18px;font-weight:600;color:var(--gray-900);margin-bottom:8px;}
+  .drop-sub{font-size:14px;color:var(--gray-500);margin-bottom:16px;}
+  .drop-formats{display:inline-flex;gap:8px;}
+  .format-tag{background:var(--gray-100);color:var(--gray-600);padding:4px 12px;border-radius:99px;font-size:12px;font-weight:600;}
+  .drop-btn{display:inline-flex;align-items:center;gap:6px;background:var(--primary);color:white;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;border:none;cursor:pointer;margin-top:16px;}
+
+  /* FILE LIST */
+  .file-list{margin-bottom:20px;}
+  .file-list-title{font-size:13px;font-weight:600;color:var(--gray-700);margin-bottom:10px;}
+  .file-item{display:flex;align-items:center;gap:12px;background:white;border:1px solid var(--gray-200);border-radius:10px;padding:12px 16px;margin-bottom:8px;}
+  .file-icon{width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+  .file-icon.pdf{background:#fee2e2;}
+  .file-icon.xml{background:var(--primary-50);}
+  .file-info{flex:1;}
+  .file-name{font-size:13px;font-weight:600;color:var(--gray-900);}
+  .file-size{font-size:11px;color:var(--gray-500);margin-top:1px;}
+  .file-status{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;}
+  .file-status.done{color:var(--primary);}
+  .file-status.uploading{color:var(--blue);}
+  .file-remove{color:var(--gray-400);cursor:pointer;padding:4px;font-size:16px;line-height:1;}
+  .progress-bar-sm{height:3px;background:var(--gray-100);border-radius:99px;margin-top:6px;overflow:hidden;}
+  .progress-fill-sm{height:100%;background:var(--blue);border-radius:99px;}
+
+  /* REQUIREMENTS */
+  .requirements{background:var(--blue-light,#eff6ff);border:1px solid #bfdbfe;border-radius:12px;padding:16px;margin-bottom:20px;display:flex;gap:12px;}
+  .req-icon{font-size:20px;flex-shrink:0;}
+  .req-title{font-size:13px;font-weight:700;color:#1d4ed8;margin-bottom:8px;}
+  .req-item{display:flex;align-items:center;gap:6px;font-size:12px;color:#1e40af;padding:2px 0;}
+  .req-check{color:var(--primary);font-weight:700;}
+  .req-optional{font-size:11px;color:#60a5fa;margin-top:6px;}
+
+  /* STEPPER */
+  .stepper{background:white;border:1px solid var(--gray-200);border-radius:12px;padding:20px;margin-bottom:20px;}
+  .stepper-title{font-family:'Outfit',sans-serif;font-size:15px;font-weight:600;color:var(--gray-900);margin-bottom:16px;}
+  .stepper-progress{height:4px;background:var(--gray-100);border-radius:99px;margin-bottom:20px;overflow:hidden;}
+  .stepper-fill{height:100%;background:var(--primary);border-radius:99px;transition:width 0.5s;}
+  .step-list{display:flex;flex-direction:column;gap:10px;}
+  .step-item{display:flex;align-items:center;gap:12px;}
+  .step-circle{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+  .step-circle.done{background:var(--primary);color:white;}
+  .step-circle.active{background:var(--blue);color:white;}
+  .step-circle.pending{background:var(--gray-100);color:var(--gray-400);border:2px solid var(--gray-200);}
+  .step-label{font-size:13px;font-weight:500;}
+  .step-label.done{color:var(--primary);}
+  .step-label.active{color:var(--blue);font-weight:600;}
+  .step-label.pending{color:var(--gray-400);}
+  .step-time{margin-left:auto;font-size:11px;color:var(--gray-400);}
+
+  /* SPINNER */
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .spinner{width:16px;height:16px;border:2px solid var(--gray-200);border-top-color:var(--blue);border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0;}
+
+  /* RESULT */
+  .result-panel{border-radius:12px;padding:20px;margin-bottom:20px;display:flex;gap:16px;align-items:flex-start;}
+  .result-panel.success{background:var(--primary-50);border:1px solid #86efac;}
+  .result-panel.blocked{background:#fffbeb;border:1px solid #fde68a;}
+  .result-panel.error{background:#fef2f2;border:1px solid #fecaca;}
+  .result-icon{font-size:28px;flex-shrink:0;}
+  .result-title{font-family:'Outfit',sans-serif;font-size:16px;font-weight:700;margin-bottom:4px;}
+  .result-title.success{color:#166534;}
+  .result-title.warn{color:#92400e;}
+  .result-sub{font-size:13px;margin-bottom:12px;}
+  .result-link{font-size:13px;font-weight:600;color:var(--primary);cursor:pointer;text-decoration:none;}
+  .result-badge{display:inline-flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+  .warning-item{background:#fef3c7;color:#92400e;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+
+  /* ACTIONS */
+  .upload-actions{display:flex;gap:12px;justify-content:flex-end;}
+  .btn-secondary{background:white;border:1px solid var(--gray-200);color:var(--gray-700);padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;}
+  .btn-primary{background:var(--primary);color:white;border:none;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;}
+
+  .screen-label{position:fixed;bottom:16px;right:16px;background:var(--gray-800);color:white;font-size:11px;padding:6px 12px;border-radius:99px;display:flex;align-items:center;gap:6px;z-index:100;}
+  .screen-label .dot{width:6px;height:6px;background:var(--primary);border-radius:50%;}
+</style>
+</head>
+<body style="padding-bottom:54px">
+
+<!-- SIDEBAR -->
+<aside>
+  <div class="logo">
+    <div class="logo-icon">📄</div>
+    <div class="logo-text">Factura<span>Flow</span></div>
+  </div>
+  <nav>
+    <div class="nav-item" style="color:var(--gray-600)">🏠 Dashboard</div>
+    <div class="nav-item active">📤 Upload Invoice</div>
+    <div class="nav-item" style="color:var(--gray-600)">📋 Invoices</div>
+    <div class="nav-item" style="color:var(--gray-600)">⚠️ Exceptions</div>
+    <div class="nav-item" style="color:var(--gray-600)">👥 Suppliers</div>
+  </nav>
+</aside>
+
+<!-- MAIN -->
+<main>
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="back-btn">← Back</div>
+    <div class="topbar-title">Upload Invoice</div>
+  </div>
+
+  <div class="content">
+    <div class="upload-wrap">
+
+      <!-- HEADER -->
+      <div class="upload-header">
+        <h1>Upload AP Invoice</h1>
+        <p>Upload your PDF invoice and XML factura (CFDI 4.0) for automated processing and SAT validation.</p>
+      </div>
+
+      <!-- DROP ZONE -->
+      <div class="drop-zone">
+        <div class="drop-icon">☁️</div>
+        <div class="drop-title">Drag & drop files here</div>
+        <div class="drop-sub">or click to browse your files</div>
+        <div class="drop-formats">
+          <span class="format-tag">📄 PDF</span>
+          <span class="format-tag">📋 XML (CFDI 4.0)</span>
+          <span class="format-tag">Max 10MB each</span>
+        </div>
+        <button class="drop-btn">📁 Browse Files</button>
+      </div>
+
+      <!-- FILE REQUIREMENTS -->
+      <div class="requirements">
+        <div class="req-icon">ℹ️</div>
+        <div>
+          <div class="req-title">What we need</div>
+          <div class="req-item"><span class="req-check">✓</span> PDF invoice (factura in PDF format)</div>
+          <div class="req-item"><span class="req-check">✓</span> XML file (CFDI 4.0 from your vendor / SAT)</div>
+          <div class="req-item" style="color:#60a5fa">○ Container number (optional — helps match to shipment)</div>
+          <div class="req-item" style="color:#60a5fa">○ BL Number / PO Number (optional)</div>
+          <div class="req-optional">If only PDF is uploaded, we'll do AI extraction without XML cross-validation.</div>
+        </div>
+      </div>
+
+      <!-- FILE LIST (files added) -->
+      <div class="file-list">
+        <div class="file-list-title">Uploaded Files</div>
+        <div class="file-item">
+          <div class="file-icon pdf">📄</div>
+          <div class="file-info">
+            <div class="file-name">invoice_WSI_2026_0312.pdf</div>
+            <div class="file-size">234 KB · PDF Document</div>
+            <div class="progress-bar-sm" style="display:none"></div>
+          </div>
+          <div class="file-status done">✅ Uploaded</div>
+          <div class="file-remove">✕</div>
+        </div>
+        <div class="file-item">
+          <div class="file-icon xml">📋</div>
+          <div class="file-info">
+            <div class="file-name">cfdi_WSI_2026_0312.xml</div>
+            <div class="file-size">18 KB · CFDI 4.0 XML</div>
+          </div>
+          <div class="file-status done">✅ Uploaded</div>
+          <div class="file-remove">✕</div>
+        </div>
+      </div>
+
+      <!-- PROCESSING STEPPER -->
+      <div class="stepper">
+        <div class="stepper-title">Processing Status</div>
+        <div class="stepper-progress">
+          <div class="stepper-fill" style="width:60%"></div>
+        </div>
+        <div class="step-list">
+          <div class="step-item">
+            <div class="step-circle done">✓</div>
+            <div class="step-label done">Files uploaded</div>
+            <div class="step-time">0.4s</div>
+          </div>
+          <div class="step-item">
+            <div class="step-circle done">✓</div>
+            <div class="step-label done">Extracting invoice data (AI)</div>
+            <div class="step-time">4.2s</div>
+          </div>
+          <div class="step-item">
+            <div class="step-circle active"><div class="spinner"></div></div>
+            <div class="step-label active">Validating with SAT CFDI 4.0...</div>
+            <div class="step-time">~3s</div>
+          </div>
+          <div class="step-item">
+            <div class="step-circle pending">4</div>
+            <div class="step-label pending">Running exception checks</div>
+            <div class="step-time">~2s</div>
+          </div>
+          <div class="step-item">
+            <div class="step-circle pending">5</div>
+            <div class="step-label pending">Complete</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUCCESS RESULT PANEL (shown after complete) -->
+      <div class="result-panel success">
+        <div class="result-icon">🎉</div>
+        <div style="flex:1">
+          <div class="result-title success">Invoice processed successfully!</div>
+          <div class="result-sub" style="color:#166534">SAT validation passed · CargoWise match found · 1 warning</div>
+          <div class="result-badge">
+            <span class="warning-item">⚠ IVA rate: 15.2% vs expected 16%</span>
+          </div>
+          <div style="margin-top:12px;display:flex;gap:12px;">
+            <a class="result-link" href="#">📋 View invoice details →</a>
+            <a class="result-link" href="#" style="color:var(--gray-500)">Review exceptions</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTIONS -->
+      <div class="upload-actions">
+        <button class="btn-secondary">↑ Upload Another</button>
+        <button class="btn-primary">📋 View All Invoices →</button>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<div class="screen-label"><div class="dot"></div>Screen 2 — Invoice Upload</div>
+<!-- FF PROTO NAV -->
+<style>
+.pbar{position:fixed;bottom:0;left:0;right:0;height:54px;background:rgba(17,24,39,.97);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid rgba(255,255,255,.07);display:flex;align-items:center;padding:0 20px;gap:10px;z-index:99999;font-family:'Inter',sans-serif;}
+.pbtn{display:inline-flex;align-items:center;gap:6px;color:rgba(255,255,255,.65);font-size:12px;font-weight:500;text-decoration:none;padding:5px 12px;border-radius:6px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.09);white-space:nowrap;transition:all .15s;}
+.pbtn:hover{background:rgba(255,255,255,.13);color:#fff;text-decoration:none;}
+.pbtn.off{opacity:.2;pointer-events:none;}
+.pctr{flex:1;display:flex;align-items:center;justify-content:center;gap:10px;}
+.pflw{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#86efac;background:rgba(22,163,74,.14);border:1px solid rgba(22,163,74,.22);padding:2px 9px;border-radius:10px;}
+.ptit{font-size:13px;font-weight:600;color:#fff;font-family:'Outfit',sans-serif;}
+.pnum{font-size:11px;color:rgba(255,255,255,.28);}
+.pmapbtn{width:32px;height:32px;border-radius:6px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.09);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.4);flex-shrink:0;}
+.pmapbtn:hover{background:rgba(255,255,255,.13);color:#fff;}
+.pkeys{display:flex;align-items:center;gap:4px;font-size:10px;color:rgba(255,255,255,.18);margin-left:4px;}
+.pkey{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:3px;padding:1px 5px;font-family:monospace;}
+.pmap{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);z-index:100000;padding:36px 40px;overflow-y:auto;}
+.pmap.on{display:block;}
+.pmhd{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;}
+.pmhd h2{font-family:'Outfit',sans-serif;font-weight:700;font-size:22px;color:#fff;margin:0;}
+.pmcls{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:rgba(255,255,255,.6);cursor:pointer;font-size:20px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;}
+.pmcls:hover{background:rgba(255,255,255,.15);color:#fff;}
+.pmgrp{margin-bottom:18px;}
+.pmgl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.28);margin-bottom:7px;}
+.pmscrns{display:flex;flex-wrap:wrap;gap:5px;}
+.pmitem{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);border-radius:5px;text-decoration:none;font-size:11px;color:rgba(255,255,255,.55);transition:all .15s;font-family:'Inter',sans-serif;}
+.pmitem:hover{background:rgba(22,163,74,.18);border-color:rgba(22,163,74,.4);color:#fff;text-decoration:none;}
+.pmitem.cur{background:rgba(22,163,74,.2);border-color:#16a34a;color:#86efac;}
+.pmn{font-size:9px;color:rgba(255,255,255,.22);font-family:monospace;}
+</style>
+<div class="pbar">
+  <div style="display:flex;align-items:center;min-width:160px;">
+    <a class="pbtn" id="pp" href="07-invoice-list.html">
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg>
+      Invoice List
+    </a>
+  </div>
+  <div class="pctr">
+    <span class="pflw">Invoices</span>
+    <span class="ptit">Invoice Upload</span>
+    <span class="pnum">08 / 49</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:6px;min-width:160px;justify-content:flex-end;">
+    <a class="pbtn" id="pn" href="28-bulk-upload.html">
+      Bulk Upload
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+    </a>
+    <button class="pmapbtn" onclick="document.getElementById('pmo').classList.toggle('on')" title="Screen map (M)">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    </button>
+    <div class="pkeys"><span class="pkey">&#8592;</span><span class="pkey">&#8594;</span><span style="margin-left:3px"><span class="pkey">M</span> map</span></div>
+  </div>
+</div>
+<div class="pmap" id="pmo">
+  <div style="max-width:1100px;margin:0 auto;">
+    <div class="pmhd">
+      <h2>FacturaFlow &mdash; All 49 Screens</h2>
+      <button class="pmcls" onclick="document.getElementById('pmo').classList.remove('on')">&#x2715;</button>
+    </div>
+    <div class="pmgrp"><div class="pmgl">Onboarding</div><div class="pmscrns">
+<a class="pmitem" href="06-signup.html"><span class="pmn">01</span>Sign Up</a>
+<a class="pmitem" href="34-onboarding-checklist.html"><span class="pmn">02</span>Onboarding Checklist</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Authentication</div><div class="pmscrns">
+<a class="pmitem" href="09-login.html"><span class="pmn">03</span>Login</a>
+<a class="pmitem" href="10-forgot-password.html"><span class="pmn">04</span>Forgot Password</a>
+<a class="pmitem" href="11-tenant-switcher.html"><span class="pmn">05</span>Workspace Switcher</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Core App</div><div class="pmscrns">
+<a class="pmitem" href="01-dashboard.html"><span class="pmn">06</span>Dashboard</a>
+<a class="pmitem" href="25-audit-trail.html"><span class="pmn">17</span>Audit Trail</a>
+<a class="pmitem" href="26-suppliers.html"><span class="pmn">22</span>Suppliers</a>
+<a class="pmitem" href="27-reports.html"><span class="pmn">23</span>Reports</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Invoices</div><div class="pmscrns">
+<a class="pmitem" href="07-invoice-list.html"><span class="pmn">07</span>Invoice List</a>
+<a class="pmitem cur" href="02-invoice-upload.html"><span class="pmn">08</span>Upload Invoice</a>
+<a class="pmitem" href="28-bulk-upload.html"><span class="pmn">09</span>Bulk Upload</a>
+<a class="pmitem" href="08-ai-extraction.html"><span class="pmn">10</span>AI Extraction</a>
+<a class="pmitem" href="03-invoice-detail.html"><span class="pmn">11</span>Invoice Detail</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">SAT &amp; Compliance</div><div class="pmscrns">
+<a class="pmitem" href="04-sat-validation.html"><span class="pmn">12</span>SAT Validation</a>
+<a class="pmitem" href="19-sat-dashboard.html"><span class="pmn">18</span>SAT Dashboard</a>
+<a class="pmitem" href="20-lista-negra.html"><span class="pmn">19</span>Lista Negra</a>
+<a class="pmitem" href="21-rfc-directory.html"><span class="pmn">20</span>RFC Directory</a>
+<a class="pmitem" href="22-sat-settings.html"><span class="pmn">21</span>SAT Settings</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Exceptions</div><div class="pmscrns">
+<a class="pmitem" href="05-exception-queue.html"><span class="pmn">13</span>Exception Queue</a>
+<a class="pmitem" href="37-invoice-comparison.html"><span class="pmn">14</span>Invoice Comparison</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Approval</div><div class="pmscrns">
+<a class="pmitem" href="35-approval-request.html"><span class="pmn">15</span>Approval Request</a>
+<a class="pmitem" href="36-approval-chain.html"><span class="pmn">16</span>Approval Chain</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Workflows</div><div class="pmscrns">
+<a class="pmitem" href="23-workflow-list.html"><span class="pmn">24</span>Workflow List</a>
+<a class="pmitem" href="24-workflow-builder.html"><span class="pmn">25</span>Workflow Builder</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Settings</div><div class="pmscrns">
+<a class="pmitem" href="15-settings-profile.html"><span class="pmn">26</span>Profile</a>
+<a class="pmitem" href="16-settings-team.html"><span class="pmn">27</span>Team</a>
+<a class="pmitem" href="17-settings-integrations.html"><span class="pmn">28</span>Integrations</a>
+<a class="pmitem" href="18-settings-notifications.html"><span class="pmn">29</span>Notifications</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Developer</div><div class="pmscrns">
+<a class="pmitem" href="38-api-keys.html"><span class="pmn">30</span>API Keys</a>
+<a class="pmitem" href="39-webhooks.html"><span class="pmn">31</span>Webhooks</a>
+<a class="pmitem" href="40-global-search.html"><span class="pmn">32</span>Global Search</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Billing</div><div class="pmscrns">
+<a class="pmitem" href="12-billing-overview.html"><span class="pmn">33</span>Billing Overview</a>
+<a class="pmitem" href="13-upgrade-plan.html"><span class="pmn">34</span>Upgrade Plan</a>
+<a class="pmitem" href="14-payment-history.html"><span class="pmn">35</span>Payment History</a>
+<a class="pmitem" href="45-trial-expiry.html"><span class="pmn">36</span>Trial Expiry</a>
+<a class="pmitem" href="46-cancellation-flow.html"><span class="pmn">37</span>Cancellation</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Admin &amp; Ops</div><div class="pmscrns">
+<a class="pmitem" href="41-admin-tenants.html"><span class="pmn">38</span>Admin Tenants</a>
+<a class="pmitem" href="42-admin-impersonate.html"><span class="pmn">39</span>Impersonation</a>
+<a class="pmitem" href="43-cw-field-mapper.html"><span class="pmn">40</span>CW Field Mapper</a>
+<a class="pmitem" href="44-cw-sync-log.html"><span class="pmn">41</span>CW Sync Log</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Empty States</div><div class="pmscrns">
+<a class="pmitem" href="29-empty-invoices.html"><span class="pmn">42</span>Empty Invoices</a>
+<a class="pmitem" href="30-empty-exceptions.html"><span class="pmn">43</span>Empty Exceptions</a>
+<a class="pmitem" href="31-empty-suppliers.html"><span class="pmn">44</span>Empty Suppliers</a>
+<a class="pmitem" href="32-empty-reports.html"><span class="pmn">45</span>Empty Reports</a>
+<a class="pmitem" href="33-empty-workflows.html"><span class="pmn">46</span>Empty Workflows</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Mobile</div><div class="pmscrns">
+<a class="pmitem" href="47-mobile-dashboard.html"><span class="pmn">47</span>Mobile Dashboard</a>
+<a class="pmitem" href="48-mobile-invoice-detail.html"><span class="pmn">48</span>Mobile Invoice</a>
+<a class="pmitem" href="49-mobile-approve.html"><span class="pmn">49</span>Mobile Approve</a>
+</div></div>
+  </div>
+</div>
+<script>
+document.addEventListener('keydown',function(e){
+  var p=document.getElementById('pp'),n=document.getElementById('pn');
+  if(e.key==='ArrowLeft'&&p&&!p.classList.contains('off'))window.location.href=p.href;
+  if(e.key==='ArrowRight'&&n&&!n.classList.contains('off'))window.location.href=n.href;
+  if(e.key==='Escape')document.getElementById('pmo').classList.remove('on');
+  if(e.key.toLowerCase()==='m'&&document.activeElement.tagName!=='INPUT'&&document.activeElement.tagName!=='TEXTAREA')document.getElementById('pmo').classList.toggle('on');
+});
+</script>
+<!-- END FF PROTO NAV -->
+</body>
+</html>

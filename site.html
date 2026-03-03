@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FacturaFlow — AP Invoice Automation for Mexican Freight Forwarders</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --green:#16a34a;--green-light:#22c55e;--green-dark:#15803d;--green-xlight:#dcfce7;
+  --red:#ef4444;--yellow:#f59e0b;--blue:#3b82f6;--purple:#8b5cf6;
+  --dark:#0f172a;--dark2:#1e293b;--dark3:#334155;
+  --body:#f8fafc;--white:#ffffff;
+  --text:#0f172a;--muted:#64748b;--border:#e2e8f0;
+  --font-head:'Outfit',sans-serif;--font-body:'Inter',sans-serif;--font-mono:'JetBrains Mono',monospace;
+}
+html{scroll-behavior:smooth;}
+body{font-family:var(--font-body);color:var(--text);background:var(--white);line-height:1.6;}
+
+/* ─── NAV ─── */
+nav{position:sticky;top:0;z-index:1000;background:rgba(255,255,255,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 40px;height:64px;display:flex;align-items:center;gap:32px;}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0;}
+.nav-logo-mark{width:34px;height:34px;background:var(--green);border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-weight:800;font-size:18px;color:#fff;letter-spacing:-.5px;box-shadow:0 0 0 3px rgba(22,163,74,.18);}
+.nav-logo-text{font-family:var(--font-head);font-weight:700;font-size:18px;color:var(--text);}
+.nav-logo-text span{color:var(--green);}
+.nav-links{display:flex;align-items:center;gap:4px;margin-left:16px;}
+.nav-links a{text-decoration:none;color:var(--muted);font-size:14px;font-weight:500;padding:6px 12px;border-radius:6px;transition:all .15s;}
+.nav-links a:hover{color:var(--text);background:#f1f5f9;}
+.nav-right{display:flex;align-items:center;gap:10px;margin-left:auto;}
+.nav-btn-ghost{text-decoration:none;color:var(--muted);font-size:13px;font-weight:500;padding:7px 14px;border-radius:7px;border:1px solid var(--border);transition:all .15s;}
+.nav-btn-ghost:hover{border-color:#94a3b8;color:var(--text);}
+.nav-btn-primary{text-decoration:none;background:var(--green);color:#fff;font-size:13px;font-weight:600;padding:7px 16px;border-radius:7px;transition:all .15s;display:flex;align-items:center;gap:6px;}
+.nav-btn-primary:hover{background:var(--green-dark);}
+
+/* ─── HERO ─── */
+.hero{background:var(--dark);padding:100px 40px 0;position:relative;overflow:hidden;}
+.hero-glow{position:absolute;top:-200px;left:50%;transform:translateX(-50%);width:800px;height:600px;background:radial-gradient(ellipse,rgba(22,163,74,.25) 0%,transparent 70%);pointer-events:none;}
+.hero-content{max-width:1100px;margin:0 auto;position:relative;}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(22,163,74,.12);border:1px solid rgba(22,163,74,.3);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;color:var(--green-light);text-transform:uppercase;letter-spacing:.06em;margin-bottom:28px;}
+.hero-badge-dot{width:6px;height:6px;background:var(--green-light);border-radius:50%;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+.hero h1{font-family:var(--font-head);font-size:clamp(42px,5.5vw,72px);font-weight:800;color:#fff;line-height:1.08;letter-spacing:-2px;margin-bottom:24px;max-width:820px;}
+.hero h1 .accent{color:var(--green-light);}
+.hero p{font-size:clamp(16px,1.8vw,20px);color:rgba(255,255,255,.6);max-width:580px;line-height:1.7;margin-bottom:40px;}
+.hero-cta{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:60px;}
+.btn-hero-primary{display:inline-flex;align-items:center;gap:8px;background:var(--green);color:#fff;font-size:15px;font-weight:600;padding:14px 28px;border-radius:10px;text-decoration:none;transition:all .2s;box-shadow:0 0 0 0 rgba(22,163,74,.4);}
+.btn-hero-primary:hover{background:var(--green-dark);box-shadow:0 0 0 4px rgba(22,163,74,.2);}
+.btn-hero-ghost{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.07);color:rgba(255,255,255,.8);font-size:15px;font-weight:500;padding:14px 24px;border-radius:10px;text-decoration:none;border:1px solid rgba(255,255,255,.12);transition:all .2s;}
+.btn-hero-ghost:hover{background:rgba(255,255,255,.12);color:#fff;}
+.hero-stats{display:flex;align-items:center;gap:40px;flex-wrap:wrap;margin-bottom:60px;}
+.hero-stat{display:flex;flex-direction:column;}
+.hero-stat-num{font-family:var(--font-head);font-size:32px;font-weight:800;color:#fff;}
+.hero-stat-label{font-size:12px;color:rgba(255,255,255,.4);margin-top:2px;}
+.hero-stat-divider{width:1px;height:40px;background:rgba(255,255,255,.08);}
+.hero-screen{position:relative;max-width:1060px;margin:0 auto;}
+.hero-browser{background:#1e293b;border-radius:16px 16px 0 0;border:1px solid rgba(255,255,255,.08);border-bottom:none;overflow:hidden;}
+.hero-browser-bar{height:44px;background:#0f1929;display:flex;align-items:center;padding:0 16px;gap:10px;border-bottom:1px solid rgba(255,255,255,.06);}
+.hero-browser-dots{display:flex;gap:6px;}
+.hero-browser-dots span{width:11px;height:11px;border-radius:50%;}
+.hero-browser-url{flex:1;background:rgba(255,255,255,.06);border-radius:5px;height:26px;display:flex;align-items:center;padding:0 10px;font-family:var(--font-mono);font-size:11px;color:rgba(255,255,255,.3);gap:6px;max-width:420px;margin:0 auto;}
+.hero-browser-url-lock{color:var(--green-light);font-size:10px;}
+.hero-screen-img{display:block;width:100%;height:520px;background:linear-gradient(180deg,#0f1929 0%,#111827 100%);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.hero-screen-placeholder{display:flex;flex-direction:column;align-items:center;gap:16px;z-index:1;}
+.hero-screen-placeholder .icon{width:64px;height:64px;background:rgba(22,163,74,.15);border:1px solid rgba(22,163,74,.25);border-radius:16px;display:flex;align-items:center;justify-content:center;}
+.hero-screen-placeholder p{color:rgba(255,255,255,.4);font-size:14px;}
+/* Fake dashboard preview */
+.fake-dash{position:absolute;inset:0;padding:20px;}
+.fake-sidebar{position:absolute;left:0;top:0;bottom:0;width:200px;background:rgba(255,255,255,.03);border-right:1px solid rgba(255,255,255,.05);padding:20px 14px;}
+.fake-sidebar-logo{width:32px;height:32px;background:var(--green);border-radius:8px;margin-bottom:20px;}
+.fake-sidebar-item{height:10px;border-radius:4px;background:rgba(255,255,255,.06);margin-bottom:10px;}
+.fake-sidebar-item.active{background:rgba(22,163,74,.2);}
+.fake-main{margin-left:210px;}
+.fake-topbar{height:14px;border-radius:4px;background:rgba(255,255,255,.04);margin-bottom:16px;}
+.fake-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
+.fake-kpi{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:12px;}
+.fake-kpi-num{height:16px;border-radius:3px;background:rgba(255,255,255,.08);margin-bottom:6px;width:60%;}
+.fake-kpi-label{height:8px;border-radius:3px;background:rgba(255,255,255,.04);width:80%;}
+.fake-table{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);border-radius:8px;overflow:hidden;}
+.fake-table-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.04);}
+.fake-table-row:last-child{border-bottom:none;}
+.fake-table-row-cell{height:8px;border-radius:3px;background:rgba(255,255,255,.07);}
+.fake-badge{height:18px;border-radius:10px;background:rgba(22,163,74,.2);}
+.hero-screen-overlay{position:absolute;bottom:0;left:0;right:0;height:120px;background:linear-gradient(to top,rgba(15,23,42,1),transparent);pointer-events:none;}
+
+/* ─── LOGOS / TRUST ─── */
+.trust-section{padding:56px 40px;background:var(--body);border-bottom:1px solid var(--border);}
+.trust-inner{max-width:1100px;margin:0 auto;}
+.trust-label{text-align:center;font-size:12px;text-transform:uppercase;letter-spacing:.1em;font-weight:600;color:var(--muted);margin-bottom:28px;}
+.trust-logos{display:flex;align-items:center;justify-content:center;gap:48px;flex-wrap:wrap;}
+.trust-logo{display:flex;align-items:center;gap:8px;opacity:.45;filter:grayscale(1);transition:all .2s;}
+.trust-logo:hover{opacity:.8;filter:grayscale(0);}
+.trust-logo-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;}
+.trust-logo-name{font-family:var(--font-head);font-weight:700;font-size:15px;color:var(--dark);}
+
+/* ─── PROBLEM ─── */
+.problem-section{padding:100px 40px;background:var(--white);}
+.problem-inner{max-width:1100px;margin:0 auto;}
+.section-eyebrow{display:inline-block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--green);background:var(--green-xlight);padding:4px 12px;border-radius:20px;margin-bottom:16px;}
+.section-title{font-family:var(--font-head);font-size:clamp(32px,3.5vw,48px);font-weight:800;letter-spacing:-1.5px;line-height:1.1;margin-bottom:16px;}
+.section-sub{font-size:18px;color:var(--muted);line-height:1.7;max-width:560px;}
+.problem-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:64px;}
+.problem-col h3{font-family:var(--font-head);font-size:22px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:10px;}
+.problem-col.before h3{color:var(--red);}
+.problem-col.after h3{color:var(--green);}
+.problem-item{display:flex;align-items:flex-start;gap:12px;padding:16px;border-radius:10px;margin-bottom:10px;}
+.problem-col.before .problem-item{background:#fef2f2;}
+.problem-col.after .problem-item{background:#f0fdf4;}
+.problem-item-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+.problem-col.before .problem-item-icon{background:#fee2e2;}
+.problem-col.after .problem-item-icon{background:#dcfce7;}
+.problem-item-text{font-size:14px;line-height:1.6;}
+.problem-col.before .problem-item-text{color:#991b1b;}
+.problem-col.after .problem-item-text{color:#166534;}
+
+/* ─── HOW IT WORKS ─── */
+.how-section{padding:100px 40px;background:var(--body);}
+.how-inner{max-width:1100px;margin:0 auto;}
+.how-header{text-align:center;margin-bottom:64px;}
+.how-header .section-sub{margin:0 auto;}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;margin-top:48px;}
+.step{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:32px;position:relative;transition:all .2s;}
+.step:hover{border-color:var(--green);box-shadow:0 0 0 3px rgba(22,163,74,.08);}
+.step-num{position:absolute;top:-16px;left:28px;background:var(--green);color:#fff;font-family:var(--font-head);font-weight:800;font-size:14px;padding:4px 12px;border-radius:20px;}
+.step-icon{width:52px;height:52px;background:var(--green-xlight);border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;margin-top:8px;}
+.step h3{font-family:var(--font-head);font-size:20px;font-weight:700;margin-bottom:10px;}
+.step p{font-size:14px;color:var(--muted);line-height:1.7;}
+.step-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px;}
+.step-tag{font-size:11px;font-weight:600;padding:3px 9px;border-radius:5px;background:#f1f5f9;color:var(--muted);}
+
+/* ─── FEATURES ─── */
+.features-section{padding:100px 40px;background:var(--white);}
+.features-inner{max-width:1100px;margin:0 auto;}
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:56px;}
+.feature-card{padding:28px;border:1px solid var(--border);border-radius:14px;transition:all .2s;}
+.feature-card:hover{border-color:rgba(22,163,74,.4);box-shadow:0 8px 32px rgba(22,163,74,.06);}
+.feature-icon{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;}
+.feature-card h3{font-family:var(--font-head);font-size:17px;font-weight:700;margin-bottom:8px;}
+.feature-card p{font-size:13px;color:var(--muted);line-height:1.7;}
+.feature-card .feature-link{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:var(--green);margin-top:12px;text-decoration:none;}
+.feature-card .feature-link:hover{gap:7px;}
+
+/* ─── SAT SECTION ─── */
+.sat-section{padding:100px 40px;background:var(--dark);position:relative;overflow:hidden;}
+.sat-glow{position:absolute;top:50%;right:-100px;transform:translateY(-50%);width:600px;height:600px;background:radial-gradient(ellipse,rgba(22,163,74,.15) 0%,transparent 70%);pointer-events:none;}
+.sat-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;position:relative;}
+.sat-content .section-eyebrow{background:rgba(22,163,74,.15);color:var(--green-light);}
+.sat-content .section-title{color:#fff;}
+.sat-content .section-sub{color:rgba(255,255,255,.55);}
+.sat-checks{margin-top:32px;display:flex;flex-direction:column;gap:14px;}
+.sat-check{display:flex;align-items:flex-start;gap:12px;}
+.sat-check-icon{width:22px;height:22px;background:rgba(22,163,74,.2);border:1px solid rgba(22,163,74,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.sat-check-text strong{display:block;font-size:14px;font-weight:600;color:#fff;margin-bottom:2px;}
+.sat-check-text p{font-size:13px;color:rgba(255,255,255,.45);line-height:1.6;}
+.sat-card{background:#1e293b;border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden;}
+.sat-card-header{background:#0f1929;padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:10px;}
+.sat-card-dot{width:10px;height:10px;border-radius:50%;}
+.sat-card-title{font-size:12px;font-weight:600;color:rgba(255,255,255,.5);}
+.sat-card-body{padding:20px;}
+.sat-field{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04);}
+.sat-field:last-child{border-bottom:none;}
+.sat-field-key{font-size:12px;color:rgba(255,255,255,.4);font-family:var(--font-mono);}
+.sat-field-val{font-size:12px;font-weight:600;}
+.sat-field-val.ok{color:var(--green-light);}
+.sat-field-val.warn{color:var(--yellow);}
+.sat-field-val.err{color:var(--red);}
+.sat-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(22,163,74,.15);border:1px solid rgba(22,163,74,.3);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;color:var(--green-light);margin-top:16px;}
+
+/* ─── INTEGRATIONS ─── */
+.integrations-section{padding:80px 40px;background:var(--body);border-top:1px solid var(--border);}
+.int-inner{max-width:1100px;margin:0 auto;text-align:center;}
+.int-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:16px;margin-top:40px;}
+.int-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:16px 24px;display:flex;align-items:center;gap:10px;font-size:14px;font-weight:600;color:var(--text);transition:all .2s;}
+.int-card:hover{border-color:var(--green);color:var(--green);}
+.int-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;}
+
+/* ─── PRICING ─── */
+.pricing-section{padding:100px 40px;background:var(--white);}
+.pricing-inner{max-width:1100px;margin:0 auto;}
+.pricing-header{text-align:center;margin-bottom:56px;}
+.pricing-toggle{display:inline-flex;background:#f1f5f9;border-radius:8px;padding:4px;margin-top:20px;}
+.pricing-toggle button{border:none;background:transparent;padding:7px 18px;border-radius:6px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s;}
+.pricing-toggle button.active{background:var(--white);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.1);}
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+.plan{border:1px solid var(--border);border-radius:16px;padding:32px;position:relative;transition:all .2s;}
+.plan:hover{box-shadow:0 12px 40px rgba(0,0,0,.06);}
+.plan.popular{border-color:var(--green);box-shadow:0 0 0 3px rgba(22,163,74,.1);}
+.plan-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:4px 14px;border-radius:20px;}
+.plan-name{font-family:var(--font-head);font-size:18px;font-weight:700;margin-bottom:4px;}
+.plan-desc{font-size:13px;color:var(--muted);margin-bottom:24px;}
+.plan-price{display:flex;align-items:baseline;gap:4px;margin-bottom:6px;}
+.plan-price-num{font-family:var(--font-head);font-size:48px;font-weight:800;letter-spacing:-2px;color:var(--text);}
+.plan-price-period{font-size:14px;color:var(--muted);}
+.plan-price-sub{font-size:12px;color:var(--muted);margin-bottom:24px;}
+.plan-btn{display:block;text-align:center;text-decoration:none;padding:11px;border-radius:9px;font-size:14px;font-weight:600;transition:all .15s;margin-bottom:24px;}
+.plan.popular .plan-btn{background:var(--green);color:#fff;}
+.plan.popular .plan-btn:hover{background:var(--green-dark);}
+.plan-btn-outline{border:1px solid var(--border);color:var(--text);}
+.plan-btn-outline:hover{border-color:#94a3b8;}
+.plan-divider{height:1px;background:var(--border);margin-bottom:20px;}
+.plan-features{list-style:none;}
+.plan-features li{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--muted);padding:5px 0;}
+.plan-features li .check{color:var(--green);flex-shrink:0;margin-top:1px;}
+.plan-features li .x{color:#cbd5e1;flex-shrink:0;margin-top:1px;}
+
+/* ─── TESTIMONIALS ─── */
+.testimonials-section{padding:100px 40px;background:var(--body);}
+.testimonials-inner{max-width:1100px;margin:0 auto;}
+.testimonials-header{text-align:center;margin-bottom:56px;}
+.testimonials-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+.testimonial{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:28px;}
+.testimonial-stars{display:flex;gap:3px;margin-bottom:16px;}
+.testimonial-star{color:var(--yellow);font-size:14px;}
+.testimonial-text{font-size:14px;line-height:1.8;color:var(--text);margin-bottom:20px;}
+.testimonial-author{display:flex;align-items:center;gap:12px;}
+.testimonial-avatar{width:40px;height:40px;border-radius:50%;font-family:var(--font-head);font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;color:#fff;}
+.testimonial-name{font-size:14px;font-weight:600;}
+.testimonial-role{font-size:12px;color:var(--muted);}
+
+/* ─── FAQ ─── */
+.faq-section{padding:100px 40px;background:var(--white);}
+.faq-inner{max-width:800px;margin:0 auto;}
+.faq-header{text-align:center;margin-bottom:56px;}
+.faq-item{border-bottom:1px solid var(--border);padding:20px 0;}
+.faq-q{display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-size:16px;font-weight:600;gap:16px;}
+.faq-q:hover{color:var(--green);}
+.faq-icon{font-size:20px;color:var(--muted);flex-shrink:0;}
+.faq-a{font-size:14px;color:var(--muted);line-height:1.8;padding-top:12px;display:none;}
+.faq-item.open .faq-a{display:block;}
+.faq-item.open .faq-icon{transform:rotate(45deg);}
+.faq-icon{transition:transform .2s;}
+
+/* ─── CTA BANNER ─── */
+.cta-section{padding:100px 40px;background:var(--dark);position:relative;overflow:hidden;}
+.cta-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:700px;height:400px;background:radial-gradient(ellipse,rgba(22,163,74,.2) 0%,transparent 70%);pointer-events:none;}
+.cta-inner{max-width:700px;margin:0 auto;text-align:center;position:relative;}
+.cta-inner h2{font-family:var(--font-head);font-size:clamp(36px,4vw,54px);font-weight:800;color:#fff;letter-spacing:-1.5px;margin-bottom:16px;}
+.cta-inner p{font-size:18px;color:rgba(255,255,255,.55);margin-bottom:40px;}
+.cta-btns{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;}
+.cta-note{font-size:12px;color:rgba(255,255,255,.3);margin-top:20px;}
+
+/* ─── FOOTER ─── */
+footer{background:#080f1a;border-top:1px solid rgba(255,255,255,.05);padding:64px 40px 40px;}
+.footer-inner{max-width:1100px;margin:0 auto;}
+.footer-top{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;margin-bottom:48px;}
+.footer-brand p{font-size:13px;color:rgba(255,255,255,.3);line-height:1.8;margin-top:12px;max-width:280px;}
+.footer-col h4{font-family:var(--font-head);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.3);margin-bottom:16px;}
+.footer-col a{display:block;font-size:13px;color:rgba(255,255,255,.45);text-decoration:none;margin-bottom:10px;transition:color .15s;}
+.footer-col a:hover{color:rgba(255,255,255,.8);}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.06);padding-top:28px;display:flex;align-items:center;justify-content:space-between;}
+.footer-copy{font-size:12px;color:rgba(255,255,255,.2);}
+.footer-badges{display:flex;gap:10px;}
+.footer-badge{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:5px;padding:4px 10px;font-size:10px;font-weight:600;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.04em;}
+
+/* ─── DESIGN LINKS SECTION ─── */
+.design-section{padding:72px 40px;background:#f8fafc;border-top:1px solid var(--border);}
+.design-inner{max-width:1100px;margin:0 auto;}
+.design-header{margin-bottom:32px;}
+.design-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+.design-card{background:var(--white);border:1px solid var(--border);border-radius:14px;overflow:hidden;text-decoration:none;color:var(--text);transition:all .2s;display:block;}
+.design-card:hover{border-color:var(--green);box-shadow:0 8px 32px rgba(22,163,74,.08);transform:translateY(-2px);}
+.design-card-preview{height:160px;display:flex;align-items:center;justify-content:center;font-size:48px;}
+.design-card-body{padding:20px;border-top:1px solid var(--border);}
+.design-card-title{font-family:var(--font-head);font-size:17px;font-weight:700;margin-bottom:6px;}
+.design-card-desc{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:12px;}
+.design-card-meta{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--green);}
+
+/* SVG icons inline helpers */
+.ico{display:inline-block;vertical-align:middle;}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════ NAV ═══════════════════════════════════════ -->
+<nav>
+  <a href="site.html" class="nav-logo">
+    <div class="nav-logo-mark">F</div>
+    <span class="nav-logo-text">Factura<span>Flow</span></span>
+  </a>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#how-it-works">How It Works</a>
+    <a href="#sat">SAT Compliance</a>
+    <a href="#pricing">Pricing</a>
+  </div>
+  <div class="nav-right">
+    <a href="technical-docs.html" class="nav-btn-ghost">Docs</a>
+    <a href="index.html" class="nav-btn-ghost">All Screens</a>
+    <a href="prototype.html" class="nav-btn-primary">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Live Demo
+    </a>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════ HERO ════════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span class="hero-badge-dot"></span>
+      SAT CFDI 4.0 Certified · Lista Negra Verified
+    </div>
+    <h1>AP Invoice Automation<br>Built for <span class="accent">Mexico.</span></h1>
+    <p>Validate SAT compliance, extract data with AI, and route approvals automatically — all in one platform designed for Mexican freight forwarders and logistics companies.</p>
+    <div class="hero-cta">
+      <a href="prototype.html" class="btn-hero-primary">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        See Interactive Demo
+      </a>
+      <a href="#pricing" class="btn-hero-ghost">
+        View Pricing
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <span class="hero-stat-num">49</span>
+        <span class="hero-stat-label">Screens Designed</span>
+      </div>
+      <div class="hero-stat-divider"></div>
+      <div class="hero-stat">
+        <span class="hero-stat-num">&lt; 30s</span>
+        <span class="hero-stat-label">SAT Validation</span>
+      </div>
+      <div class="hero-stat-divider"></div>
+      <div class="hero-stat">
+        <span class="hero-stat-num">98%</span>
+        <span class="hero-stat-label">AI Extraction Accuracy</span>
+      </div>
+      <div class="hero-stat-divider"></div>
+      <div class="hero-stat">
+        <span class="hero-stat-num">6</span>
+        <span class="hero-stat-label">Exception Checks</span>
+      </div>
+    </div>
+    <!-- Fake Dashboard Preview -->
+    <div class="hero-screen">
+      <div class="hero-browser">
+        <div class="hero-browser-bar">
+          <div class="hero-browser-dots">
+            <span style="background:#ff5f57"></span>
+            <span style="background:#ffbd2e"></span>
+            <span style="background:#28ca41"></span>
+          </div>
+          <div class="hero-browser-url">
+            <span class="hero-browser-url-lock">🔒</span>
+            app.facturaflow.io/dashboard
+          </div>
+        </div>
+        <div class="hero-screen-img">
+          <div class="fake-dash">
+            <div class="fake-sidebar">
+              <div class="fake-sidebar-logo"></div>
+              <div class="fake-sidebar-item active"></div>
+              <div class="fake-sidebar-item" style="width:75%"></div>
+              <div class="fake-sidebar-item" style="width:85%"></div>
+              <div class="fake-sidebar-item" style="width:70%"></div>
+              <div class="fake-sidebar-item" style="width:80%"></div>
+            </div>
+            <div class="fake-main">
+              <div class="fake-topbar"></div>
+              <div class="fake-kpis">
+                <div class="fake-kpi"><div class="fake-kpi-num" style="background:rgba(22,163,74,.2)"></div><div class="fake-kpi-label"></div></div>
+                <div class="fake-kpi"><div class="fake-kpi-num"></div><div class="fake-kpi-label"></div></div>
+                <div class="fake-kpi"><div class="fake-kpi-num" style="background:rgba(239,68,68,.2)"></div><div class="fake-kpi-label"></div></div>
+                <div class="fake-kpi"><div class="fake-kpi-num" style="background:rgba(59,130,246,.15)"></div><div class="fake-kpi-label"></div></div>
+              </div>
+              <div class="fake-table">
+                <div class="fake-table-row"><div class="fake-table-row-cell" style="width:100px"></div><div class="fake-table-row-cell" style="width:140px"></div><div class="fake-badge" style="width:60px;margin-left:auto"></div></div>
+                <div class="fake-table-row"><div class="fake-table-row-cell" style="width:110px"></div><div class="fake-table-row-cell" style="width:120px"></div><div class="fake-badge" style="width:60px;margin-left:auto"></div></div>
+                <div class="fake-table-row"><div class="fake-table-row-cell" style="width:90px"></div><div class="fake-table-row-cell" style="width:150px"></div><div class="fake-badge" style="width:60px;background:rgba(239,68,68,.2);margin-left:auto"></div></div>
+                <div class="fake-table-row"><div class="fake-table-row-cell" style="width:105px"></div><div class="fake-table-row-cell" style="width:130px"></div><div class="fake-badge" style="width:60px;background:rgba(245,158,11,.2);margin-left:auto"></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="hero-screen-overlay"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ TRUST ════════════════════════════════════════ -->
+<section class="trust-section">
+  <div class="trust-inner">
+    <p class="trust-label">Built for logistics companies across Mexico</p>
+    <div class="trust-logos">
+      <div class="trust-logo">
+        <div class="trust-logo-icon" style="background:#1a1a2e"><svg width="16" height="16" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+        <span class="trust-logo-name">FreightCo MX</span>
+      </div>
+      <div class="trust-logo">
+        <div class="trust-logo-icon" style="background:#0f3460"><svg width="16" height="16" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/></svg></div>
+        <span class="trust-logo-name">Global Forwarding</span>
+      </div>
+      <div class="trust-logo">
+        <div class="trust-logo-icon" style="background:#2d6a4f"><svg width="16" height="16" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v5h-7V8z"/></svg></div>
+        <span class="trust-logo-name">TransporteAP</span>
+      </div>
+      <div class="trust-logo">
+        <div class="trust-logo-icon" style="background:#6b21a8"><svg width="16" height="16" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <span class="trust-logo-name">Customs Pro</span>
+      </div>
+      <div class="trust-logo">
+        <div class="trust-logo-icon" style="background:#7c3aed"><svg width="16" height="16" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 00-2 2v6a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/></svg></div>
+        <span class="trust-logo-name">Agencia Logística</span>
+      </div>
+      <div class="trust-logo">
+        <div class="trust-logo-icon" style="background:#b45309"><svg width="16" height="16" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg></div>
+        <span class="trust-logo-name">PuertoOps</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ PROBLEM/SOLUTION ════════════════════════════════════════ -->
+<section class="problem-section">
+  <div class="problem-inner">
+    <span class="section-eyebrow">The Problem</span>
+    <h2 class="section-title">AP invoicing in Mexico<br>is painfully manual.</h2>
+    <p class="section-sub">Every AP team in Mexican freight forwarding is drowning in the same issues. FacturaFlow fixes all of them.</p>
+
+    <div class="problem-grid">
+      <div class="problem-col before">
+        <h3>
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Before FacturaFlow
+        </h3>
+        <div class="problem-item">
+          <div class="problem-item-icon"><svg width="14" height="14" fill="none" stroke="#dc2626" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+          <span class="problem-item-text">Manually downloading XML files from the SAT portal and checking each one individually</span>
+        </div>
+        <div class="problem-item">
+          <div class="problem-item-icon"><svg width="14" height="14" fill="none" stroke="#dc2626" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+          <span class="problem-item-text">Copy-pasting invoice data into spreadsheets — typos, missing fields, wrong amounts</span>
+        </div>
+        <div class="problem-item">
+          <div class="problem-item-icon"><svg width="14" height="14" fill="none" stroke="#dc2626" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+          <span class="problem-item-text">No visibility on Lista Negra status — suppliers get paid who shouldn't</span>
+        </div>
+        <div class="problem-item">
+          <div class="problem-item-icon"><svg width="14" height="14" fill="none" stroke="#dc2626" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+          <span class="problem-item-text">Approval chains are email threads — no tracking, no accountability</span>
+        </div>
+        <div class="problem-item">
+          <div class="problem-item-icon"><svg width="14" height="14" fill="none" stroke="#dc2626" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+          <span class="problem-item-text">CargoWise sync is manual — data gets entered twice, or not at all</span>
+        </div>
+      </div>
+      <div class="problem-col after">
+        <h3>
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          With FacturaFlow
+        </h3>
+        <div class="problem-item">
+          <div class="problem-item-icon"><svg width="14" height="14" fill="none" stroke="#16a34a" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <span class="problem-item-text">Automatic SAT validation on every invoice — CFDI 4.0 in under 30 seconds</span>
+        </div>
+        <div class="problem-item">
+          <div class="problem-item-icon"><svg width="14" height="14" fill="none" stroke="#16a34a" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <span class="problem-item-text">AI extracts all invoice fields from PDF or XML — 98% accuracy, zero typing</span>
+        </div>
+        <div class="problem-item">
+          <div class="problem-item-icon"><svg width="14" height="14" fill="none" stroke="#16a34a" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <span class="problem-item-text">Real-time Lista Negra check on every RFC — never pay a blacklisted supplier again</span>
+        </div>
+        <div class="problem-item">
+          <div class="problem-item-icon"><svg width="14" height="14" fill="none" stroke="#16a34a" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <span class="problem-item-text">Structured approval workflows with rules, deadlines, and full audit trail</span>
+        </div>
+        <div class="problem-item">
+          <div class="problem-item-icon"><svg width="14" height="14" fill="none" stroke="#16a34a" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <span class="problem-item-text">Native CargoWise sync — invoice data flows in automatically, no double entry</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ HOW IT WORKS ════════════════════════════════════════ -->
+<section class="how-section" id="how-it-works">
+  <div class="how-inner">
+    <div class="how-header">
+      <span class="section-eyebrow">How It Works</span>
+      <h2 class="section-title">From PDF to approved in 3 steps.</h2>
+      <p class="section-sub">Drop a file. Let AI and SAT do the work. Your team focuses on exceptions, not data entry.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-icon">
+          <svg width="24" height="24" fill="none" stroke="#16a34a" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </div>
+        <h3>Upload Invoice</h3>
+        <p>Drag &amp; drop a PDF or XML file — or let suppliers upload directly via their portal. Bulk uploads supported for high-volume teams.</p>
+        <div class="step-tags">
+          <span class="step-tag">PDF</span>
+          <span class="step-tag">XML CFDI</span>
+          <span class="step-tag">Bulk Upload</span>
+          <span class="step-tag">Email Intake</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-icon">
+          <svg width="24" height="24" fill="none" stroke="#16a34a" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h3>AI + SAT Validation</h3>
+        <p>Claude AI extracts every field. SAT API validates the CFDI in real time. Lista Negra checks the RFC. 6 exception checks fire automatically.</p>
+        <div class="step-tags">
+          <span class="step-tag">Claude AI</span>
+          <span class="step-tag">SAT CFDI 4.0</span>
+          <span class="step-tag">Lista Negra</span>
+          <span class="step-tag">6 Checks</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-icon">
+          <svg width="24" height="24" fill="none" stroke="#16a34a" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        </div>
+        <h3>Route &amp; Approve</h3>
+        <p>Clean invoices go straight to approval. Exceptions get routed to the right person. CargoWise syncs automatically on approval.</p>
+        <div class="step-tags">
+          <span class="step-tag">Workflow Rules</span>
+          <span class="step-tag">Approval Chain</span>
+          <span class="step-tag">CargoWise Sync</span>
+          <span class="step-tag">Audit Trail</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ FEATURES ════════════════════════════════════════ -->
+<section class="features-section" id="features">
+  <div class="features-inner">
+    <span class="section-eyebrow">Features</span>
+    <h2 class="section-title">Everything your AP team needs.</h2>
+    <p class="section-sub">Built specifically for the Mexican freight forwarding industry. Not a generic AP tool with SAT bolted on.</p>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon" style="background:#dcfce7">
+          <svg width="22" height="22" fill="none" stroke="#16a34a" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h3>SAT CFDI 4.0 Validation</h3>
+        <p>Real-time validation against the SAT API. Checks emisor RFC, receptor RFC, sello fiscal, UUID, cadena original, and fiscal folio.</p>
+        <a href="prototype.html#screen-12" class="feature-link">See in prototype →</a>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:#eff6ff">
+          <svg width="22" height="22" fill="none" stroke="#3b82f6" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        </div>
+        <h3>AI Data Extraction</h3>
+        <p>Claude AI reads PDFs and XML files and extracts 15+ fields with 98% accuracy. Vendor, amount, tax, shipping refs, containers — all auto-filled.</p>
+        <a href="prototype.html#screen-10" class="feature-link">See in prototype →</a>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:#fef2f2">
+          <svg width="22" height="22" fill="none" stroke="#ef4444" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <h3>Exception Queue</h3>
+        <p>Auto-categorized exceptions with severity levels, assignable owners, and resolution workflows. Never lose track of a problem invoice again.</p>
+        <a href="prototype.html#screen-13" class="feature-link">See in prototype →</a>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:#f5f3ff">
+          <svg width="22" height="22" fill="none" stroke="#8b5cf6" stroke-width="2" viewBox="0 0 24 24"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M6 21V9a9 9 0 009 9"/></svg>
+        </div>
+        <h3>Workflow Builder</h3>
+        <p>No-code rule engine. Build approval routing, escalation paths, and exception handling with a visual drag-and-drop builder.</p>
+        <a href="prototype.html#screen-25" class="feature-link">See in prototype →</a>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:#fefce8">
+          <svg width="22" height="22" fill="none" stroke="#ca8a04" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        </div>
+        <h3>Supplier Portal</h3>
+        <p>Suppliers upload invoices directly, track payment status, and manage their compliance documents — reducing your team's inbox by 60%.</p>
+        <a href="prototype.html#screen-22" class="feature-link">See in prototype →</a>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:#dcfce7">
+          <svg width="22" height="22" fill="none" stroke="#16a34a" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+        </div>
+        <h3>CargoWise Integration</h3>
+        <p>Native GL field mapping to CargoWise. Approved invoices sync automatically — no double entry, no manual exports.</p>
+        <a href="prototype.html#screen-40" class="feature-link">See in prototype →</a>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:#fef2f2">
+          <svg width="22" height="22" fill="none" stroke="#ef4444" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        </div>
+        <h3>Lista Negra Check</h3>
+        <p>Every RFC is verified against the SAT Lista Negra in real time. Block payments to blacklisted suppliers automatically before they're approved.</p>
+        <a href="prototype.html#screen-19" class="feature-link">See in prototype →</a>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:#eff6ff">
+          <svg width="22" height="22" fill="none" stroke="#3b82f6" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        </div>
+        <h3>Reports &amp; Analytics</h3>
+        <p>Invoice volume trends, exception rates, approval cycle times, and supplier performance — all in one dashboard with CSV export.</p>
+        <a href="prototype.html#screen-23" class="feature-link">See in prototype →</a>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:#f0fdf4">
+          <svg width="22" height="22" fill="none" stroke="#16a34a" stroke-width="2" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+        </div>
+        <h3>Mobile Approvals</h3>
+        <p>Approve or reject invoices from your phone. Full exception details, PDF viewer, and one-tap approval — built for the approver on the go.</p>
+        <a href="prototype.html#screen-49" class="feature-link">See in prototype →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ SAT SECTION ════════════════════════════════════════ -->
+<section class="sat-section" id="sat">
+  <div class="sat-glow"></div>
+  <div class="sat-inner">
+    <div class="sat-content">
+      <span class="section-eyebrow">SAT Compliance</span>
+      <h2 class="section-title">The only AP tool<br>that speaks SAT.</h2>
+      <p class="section-sub">Other AP tools treat SAT as an afterthought. We built FacturaFlow from the ground up for Mexican fiscal law.</p>
+      <div class="sat-checks">
+        <div class="sat-check">
+          <div class="sat-check-icon">
+            <svg width="12" height="12" fill="none" stroke="#22c55e" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="sat-check-text">
+            <strong>CFDI 4.0 Full Validation</strong>
+            <p>Checks UUID, sello, cadena original, regimen fiscal, periodicidad, exportacion, objImp — all required fields for CFDI 4.0 compliance.</p>
+          </div>
+        </div>
+        <div class="sat-check">
+          <div class="sat-check-icon">
+            <svg width="12" height="12" fill="none" stroke="#22c55e" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="sat-check-text">
+            <strong>Lista Negra RFC Check</strong>
+            <p>Real-time verification against the SAT Lista Negra (69-B). Automatically blocks invoices from blacklisted emisors.</p>
+          </div>
+        </div>
+        <div class="sat-check">
+          <div class="sat-check-icon">
+            <svg width="12" height="12" fill="none" stroke="#22c55e" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="sat-check-text">
+            <strong>RFC Directory Management</strong>
+            <p>Maintain a verified supplier RFC database. Auto-validate new suppliers against SAT records before onboarding.</p>
+          </div>
+        </div>
+        <div class="sat-check">
+          <div class="sat-check-icon">
+            <svg width="12" height="12" fill="none" stroke="#22c55e" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="sat-check-text">
+            <strong>IVA &amp; Tax Validation</strong>
+            <p>Verifies IVA rates (16%, 8%, 0%), tasa o cuota, and traslados vs retenciones against invoice totals.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="sat-card">
+      <div class="sat-card-header">
+        <span class="sat-card-dot" style="background:#ff5f57"></span>
+        <span class="sat-card-dot" style="background:#ffbd2e"></span>
+        <span class="sat-card-dot" style="background:#28ca41"></span>
+        <span class="sat-card-title" style="margin-left:8px">SAT Validation Result</span>
+      </div>
+      <div class="sat-card-body">
+        <div class="sat-field"><span class="sat-field-key">UUID</span><span class="sat-field-val ok">✓ VERIFIED</span></div>
+        <div class="sat-field"><span class="sat-field-key">Sello SAT</span><span class="sat-field-val ok">✓ VÁLIDO</span></div>
+        <div class="sat-field"><span class="sat-field-key">Emisor RFC</span><span class="sat-field-val ok">✓ ACTIVO</span></div>
+        <div class="sat-field"><span class="sat-field-key">Lista Negra</span><span class="sat-field-val ok">✓ LIMPIO</span></div>
+        <div class="sat-field"><span class="sat-field-key">Cadena Original</span><span class="sat-field-val ok">✓ MATCH</span></div>
+        <div class="sat-field"><span class="sat-field-key">IVA 16%</span><span class="sat-field-val ok">✓ CORRECTO</span></div>
+        <div class="sat-field"><span class="sat-field-key">CFDI Version</span><span class="sat-field-val ok">✓ 4.0</span></div>
+        <div class="sat-field"><span class="sat-field-key">Regimen Fiscal</span><span class="sat-field-val warn">⚠ REVISAR</span></div>
+        <div class="sat-badge">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          7/8 Checks Passed — Minor Warning
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ INTEGRATIONS ════════════════════════════════════════ -->
+<section class="integrations-section">
+  <div class="int-inner">
+    <span class="section-eyebrow">Integrations</span>
+    <h2 class="section-title" style="margin-top:8px">Works with your existing stack.</h2>
+    <div class="int-grid">
+      <div class="int-card">
+        <div class="int-icon" style="background:#1a5276"><svg width="16" height="16" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg></div>
+        CargoWise One
+      </div>
+      <div class="int-card">
+        <div class="int-icon" style="background:#16a34a"><svg width="16" height="16" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        SAT México
+      </div>
+      <div class="int-card">
+        <div class="int-icon" style="background:#1abc9c"><svg width="16" height="16" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></div>
+        Claude AI
+      </div>
+      <div class="int-card">
+        <div class="int-icon" style="background:#e84e40"><svg width="16" height="16" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+        Gmail / Outlook
+      </div>
+      <div class="int-card">
+        <div class="int-icon" style="background:#635bff"><svg width="16" height="16" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
+        Stripe Billing
+      </div>
+      <div class="int-card">
+        <div class="int-icon" style="background:#25d366"><svg width="16" height="16" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+        WhatsApp Alerts
+      </div>
+      <div class="int-card">
+        <div class="int-icon" style="background:#ff6900"><svg width="16" height="16" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+        n8n Workflows
+      </div>
+      <div class="int-card">
+        <div class="int-icon" style="background:#0052cc"><svg width="16" height="16" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+        REST API
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ PRICING ════════════════════════════════════════ -->
+<section class="pricing-section" id="pricing">
+  <div class="pricing-inner">
+    <div class="pricing-header">
+      <span class="section-eyebrow">Pricing</span>
+      <h2 class="section-title">Simple, transparent pricing.</h2>
+      <p class="section-sub" style="margin:12px auto 0;text-align:center">Start free. Upgrade as you grow. No hidden fees, no per-invoice charges.</p>
+      <div class="pricing-toggle">
+        <button class="active" onclick="setToggle(this,'monthly')">Monthly</button>
+        <button onclick="setToggle(this,'annual')">Annual <span style="color:#16a34a;font-size:11px">−20%</span></button>
+      </div>
+    </div>
+    <div class="pricing-grid">
+      <!-- Starter -->
+      <div class="plan">
+        <div class="plan-name">Starter</div>
+        <div class="plan-desc">For small AP teams getting started</div>
+        <div class="plan-price"><span class="plan-price-num" data-monthly="$99" data-annual="$79">$99</span><span class="plan-price-period">/mo</span></div>
+        <div class="plan-price-sub">Up to 200 invoices/month</div>
+        <a href="prototype.html#screen-1" class="plan-btn plan-btn-outline">Start Free Trial</a>
+        <div class="plan-divider"></div>
+        <ul class="plan-features">
+          <li><span class="check">✓</span> Up to 200 invoices/month</li>
+          <li><span class="check">✓</span> SAT CFDI 4.0 validation</li>
+          <li><span class="check">✓</span> AI data extraction</li>
+          <li><span class="check">✓</span> Lista Negra check</li>
+          <li><span class="check">✓</span> 3 team members</li>
+          <li><span class="check">✓</span> Basic approval workflows</li>
+          <li><span class="x">—</span> CargoWise integration</li>
+          <li><span class="x">—</span> API access</li>
+          <li><span class="x">—</span> Custom workflows</li>
+        </ul>
+      </div>
+      <!-- Professional -->
+      <div class="plan popular">
+        <div class="plan-badge">Most Popular</div>
+        <div class="plan-name">Professional</div>
+        <div class="plan-desc">For growing freight forwarding operations</div>
+        <div class="plan-price"><span class="plan-price-num" data-monthly="$299" data-annual="$239">$299</span><span class="plan-price-period">/mo</span></div>
+        <div class="plan-price-sub">Up to 2,000 invoices/month</div>
+        <a href="prototype.html#screen-1" class="plan-btn">Start Free Trial</a>
+        <div class="plan-divider"></div>
+        <ul class="plan-features">
+          <li><span class="check">✓</span> Up to 2,000 invoices/month</li>
+          <li><span class="check">✓</span> Everything in Starter</li>
+          <li><span class="check">✓</span> CargoWise integration</li>
+          <li><span class="check">✓</span> Unlimited team members</li>
+          <li><span class="check">✓</span> Advanced approval chains</li>
+          <li><span class="check">✓</span> Workflow builder</li>
+          <li><span class="check">✓</span> REST API access</li>
+          <li><span class="check">✓</span> Supplier portal</li>
+          <li><span class="check">✓</span> Priority support</li>
+        </ul>
+      </div>
+      <!-- Enterprise -->
+      <div class="plan">
+        <div class="plan-name">Enterprise</div>
+        <div class="plan-desc">For large operations with custom needs</div>
+        <div class="plan-price"><span class="plan-price-num">Custom</span></div>
+        <div class="plan-price-sub">Unlimited invoices · SLA guarantee</div>
+        <a href="mailto:ventas@facturaflow.io" class="plan-btn plan-btn-outline">Contact Sales</a>
+        <div class="plan-divider"></div>
+        <ul class="plan-features">
+          <li><span class="check">✓</span> Unlimited invoices</li>
+          <li><span class="check">✓</span> Everything in Professional</li>
+          <li><span class="check">✓</span> Dedicated onboarding</li>
+          <li><span class="check">✓</span> Custom integrations</li>
+          <li><span class="check">✓</span> SSO / SAML</li>
+          <li><span class="check">✓</span> Custom SLA (99.9% uptime)</li>
+          <li><span class="check">✓</span> On-premise option</li>
+          <li><span class="check">✓</span> White-label available</li>
+          <li><span class="check">✓</span> Dedicated account manager</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ TESTIMONIALS ════════════════════════════════════════ -->
+<section class="testimonials-section">
+  <div class="testimonials-inner">
+    <div class="testimonials-header">
+      <span class="section-eyebrow">Testimonials</span>
+      <h2 class="section-title">Loved by AP teams across Mexico.</h2>
+    </div>
+    <div class="testimonials-grid">
+      <div class="testimonial">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"We went from 3 days to process an invoice batch down to a few hours. The SAT validation alone saves us from so many headaches at month-end closings."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar" style="background:#16a34a">MR</div>
+          <div><div class="testimonial-name">María Ramírez</div><div class="testimonial-role">AP Manager · FreightCo MX</div></div>
+        </div>
+      </div>
+      <div class="testimonial">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"The CargoWise integration is a game changer. Our data team was spending 20+ hours a month on double-entry. That's completely gone now."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar" style="background:#3b82f6">JG</div>
+          <div><div class="testimonial-name">Juan García</div><div class="testimonial-role">Operations Director · TransporteAP</div></div>
+        </div>
+      </div>
+      <div class="testimonial">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"Lista Negra checks in real time — something our previous tool couldn't do at all. We caught a blacklisted supplier in week one. Paid for itself immediately."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar" style="background:#8b5cf6">AL</div>
+          <div><div class="testimonial-name">Ana López</div><div class="testimonial-role">CFO · Global Forwarding</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ FAQ ════════════════════════════════════════ -->
+<section class="faq-section">
+  <div class="faq-inner">
+    <div class="faq-header">
+      <span class="section-eyebrow">FAQ</span>
+      <h2 class="section-title">Common questions.</h2>
+    </div>
+    <div class="faq-item open">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        Does FacturaFlow work with SAT CFDI 4.0?
+        <span class="faq-icon">+</span>
+      </div>
+      <div class="faq-a">Yes. FacturaFlow is built specifically for CFDI 4.0. We validate all required fields including UsoCFDI, RegimenFiscalReceptor, DomicilioFiscalReceptor, Exportacion, and all new 4.0 mandatory fields. We also handle CFDI 3.3 for legacy invoices.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        How does the CargoWise integration work?
+        <span class="faq-icon">+</span>
+      </div>
+      <div class="faq-a">FacturaFlow connects directly to your CargoWise SQL database. When an invoice is approved, it automatically creates or updates the AP transaction in CargoWise using your configured GL field mappings. No manual exports, no scripts to run — it happens in real time.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        Is my data stored in Mexico or abroad?
+        <span class="faq-icon">+</span>
+      </div>
+      <div class="faq-a">Your invoice data is stored on servers in Mexico (or nearest region, configurable). We comply with LFPDPPP (Ley Federal de Protección de Datos Personales). Enterprise customers can choose on-premise deployment.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        Can I try it before paying?
+        <span class="faq-icon">+</span>
+      </div>
+      <div class="faq-a">Absolutely. Every plan starts with a 14-day free trial with no credit card required. You get full access to all features on your chosen plan. You can also interact with our live prototype right now without signing up.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        Does it work for customs brokers (agentes aduanales)?
+        <span class="faq-icon">+</span>
+      </div>
+      <div class="faq-a">Yes. FacturaFlow supports the AP workflows common in customs brokerage: pedimento-linked invoices, DTA charges, handling fees, and customs duty reimbursements. We also handle both freight forwarder and customs broker mixed operations.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        What's the implementation timeline?
+        <span class="faq-icon">+</span>
+      </div>
+      <div class="faq-a">Most teams are live within 1-2 days for the Starter plan. Professional with CargoWise integration typically takes 3-5 days including GL field mapping. Enterprise with custom integrations is scoped per project — usually 2-4 weeks.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ DESIGN ASSETS ════════════════════════════════════════ -->
+<section class="design-section">
+  <div class="design-inner">
+    <div class="design-header">
+      <span class="section-eyebrow">Design Assets</span>
+      <h2 class="section-title" style="font-size:28px;margin-top:8px">Explore the full design system</h2>
+    </div>
+    <div class="design-cards">
+      <a href="prototype.html" class="design-card">
+        <div class="design-card-preview" style="background:linear-gradient(135deg,#0f172a,#1e293b)">
+          <span>▶</span>
+        </div>
+        <div class="design-card-body">
+          <div class="design-card-title">Interactive Prototype</div>
+          <div class="design-card-desc">Navigate all 49 screens with keyboard shortcuts, screen map, and prev/next navigation.</div>
+          <div class="design-card-meta">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Open Prototype · 49 screens
+          </div>
+        </div>
+      </a>
+      <a href="index.html" class="design-card">
+        <div class="design-card-preview" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7)">
+          <span>🗂</span>
+        </div>
+        <div class="design-card-body">
+          <div class="design-card-title">Screen Library</div>
+          <div class="design-card-desc">Browse all 49 designed screens organized by phase — Onboarding, Core App, SAT, Admin, Mobile and more.</div>
+          <div class="design-card-meta">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            View All Screens
+          </div>
+        </div>
+      </a>
+      <a href="technical-docs.html" class="design-card">
+        <div class="design-card-preview" style="background:linear-gradient(135deg,#eff6ff,#dbeafe)">
+          <span>📄</span>
+        </div>
+        <div class="design-card-body">
+          <div class="design-card-title">Technical Docs</div>
+          <div class="design-card-desc">API specs, data models, SAT integration details, and architecture documentation for the development team.</div>
+          <div class="design-card-meta">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Read the Docs
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ CTA BANNER ════════════════════════════════════════ -->
+<section class="cta-section">
+  <div class="cta-glow"></div>
+  <div class="cta-inner">
+    <h2>Ready to automate<br>your AP process?</h2>
+    <p>Join the freight forwarders who've eliminated manual invoice processing. Start your 14-day free trial today.</p>
+    <div class="cta-btns">
+      <a href="prototype.html" class="btn-hero-primary">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        See the Live Demo
+      </a>
+      <a href="#pricing" class="btn-hero-ghost">View Pricing →</a>
+    </div>
+    <p class="cta-note">No credit card required · 14-day free trial · Cancel anytime</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ FOOTER ════════════════════════════════════════ -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="nav-logo" style="margin-bottom:4px">
+          <div class="nav-logo-mark" style="width:30px;height:30px;font-size:16px">F</div>
+          <span class="nav-logo-text" style="color:#fff">Factura<span>Flow</span></span>
+        </div>
+        <p>AP invoice automation built for Mexican freight forwarders. SAT CFDI 4.0 validated, AI-powered, CargoWise-integrated.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <a href="#features">Features</a>
+        <a href="#how-it-works">How It Works</a>
+        <a href="#sat">SAT Compliance</a>
+        <a href="#pricing">Pricing</a>
+        <a href="prototype.html">Live Demo</a>
+      </div>
+      <div class="footer-col">
+        <h4>Resources</h4>
+        <a href="index.html">Screen Library</a>
+        <a href="technical-docs.html">Technical Docs</a>
+        <a href="prototype.html">Prototype</a>
+        <a href="#faq">FAQ</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="#">About</a>
+        <a href="#">Blog</a>
+        <a href="mailto:ventas@facturaflow.io">Contact Sales</a>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">© 2026 FacturaFlow. All rights reserved.</span>
+      <div class="footer-badges">
+        <span class="footer-badge">SAT CFDI 4.0</span>
+        <span class="footer-badge">SOC 2 Type II</span>
+        <span class="footer-badge">SSL Encrypted</span>
+        <span class="footer-badge">LFPDPPP</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+function setToggle(btn,mode){
+  document.querySelectorAll('.pricing-toggle button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('[data-monthly]').forEach(el=>{
+    el.textContent=el.dataset[mode];
+  });
+}
+function toggleFaq(el){
+  var item=el.closest('.faq-item');
+  var wasOpen=item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(i=>i.classList.remove('open'));
+  if(!wasOpen)item.classList.add('open');
+}
+</script>
+</body>
+</html>

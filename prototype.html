@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FacturaFlow — Interactive Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-topbar: #0f172a;
+    --bg-sidebar: #111827;
+    --bg-main: #0d1117;
+    --bg-bottom: #0f172a;
+    --bg-chrome: #1e293b;
+    --border-subtle: rgba(255,255,255,.06);
+    --text-primary: #ffffff;
+    --text-muted: rgba(255,255,255,.35);
+    --text-dim: rgba(255,255,255,.5);
+    --green-accent: #16a34a;
+    --green-light: #86efac;
+    --sidebar-w: 260px;
+    --topbar-h: 56px;
+    --bottombar-h: 48px;
+  }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg-main);
+    font-family: 'Inter', sans-serif;
+    color: var(--text-primary);
+  }
+
+  /* ─── TOP BAR ─────────────────────────────────── */
+  #topbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: var(--topbar-h);
+    background: var(--bg-topbar);
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 0;
+    z-index: 100;
+  }
+
+  .tb-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+    min-width: 0;
+  }
+
+  .logo-mark {
+    width: 28px; height: 28px;
+    background: linear-gradient(135deg, #16a34a, #22c55e);
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: #fff;
+    flex-shrink: 0;
+    box-shadow: 0 0 12px rgba(22,163,74,.35);
+  }
+
+  .logo-name {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    color: #fff;
+    white-space: nowrap;
+  }
+
+  .proto-badge {
+    font-size: 10px;
+    font-weight: 600;
+    color: #86efac;
+    background: rgba(22,163,74,.18);
+    border: 1px solid rgba(134,239,172,.25);
+    border-radius: 4px;
+    padding: 2px 6px;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .tb-sep {
+    width: 1px;
+    height: 24px;
+    background: rgba(255,255,255,.1);
+    margin: 0 14px;
+    flex-shrink: 0;
+  }
+
+  .flow-select {
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 7px;
+    color: rgba(255,255,255,.75);
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 5px 28px 5px 10px;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23ffffff60' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    white-space: nowrap;
+    max-width: 180px;
+    transition: border-color .15s, background-color .15s;
+  }
+  .flow-select:hover { border-color: rgba(255,255,255,.2); background-color: rgba(255,255,255,.09); }
+  .flow-select:focus { outline: none; border-color: rgba(134,239,172,.4); }
+  .flow-select option { background: #1e293b; color: #fff; }
+
+  .tb-center {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-width: 0;
+    padding: 0 16px;
+  }
+
+  #screen-title {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+
+  #screen-counter {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .tb-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  .kbd-hints {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: rgba(255,255,255,.3);
+    white-space: nowrap;
+  }
+
+  .kbd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,.07);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 4px;
+    padding: 2px 5px;
+    font-size: 10px;
+    font-weight: 600;
+    color: rgba(255,255,255,.45);
+    font-family: 'Inter', sans-serif;
+    letter-spacing: .02em;
+    line-height: 1.4;
+  }
+
+  .tb-link {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: rgba(255,255,255,.4);
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color .15s;
+    background: none;
+    border: none;
+  }
+  .tb-link:hover { color: rgba(255,255,255,.75); }
+
+  .scale-select {
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 7px;
+    color: rgba(255,255,255,.65);
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 5px 24px 5px 8px;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23ffffff60' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 7px center;
+    transition: border-color .15s;
+  }
+  .scale-select:hover { border-color: rgba(255,255,255,.2); }
+  .scale-select:focus { outline: none; border-color: rgba(134,239,172,.4); }
+  .scale-select option { background: #1e293b; color: #fff; }
+
+  /* ─── SIDEBAR ─────────────────────────────────── */
+  #sidebar {
+    position: fixed;
+    top: var(--topbar-h);
+    bottom: var(--bottombar-h);
+    left: 0;
+    width: var(--sidebar-w);
+    background: var(--bg-sidebar);
+    border-right: 1px solid var(--border-subtle);
+    display: flex;
+    flex-direction: column;
+    z-index: 90;
+  }
+
+  .sidebar-top {
+    padding: 12px 12px 10px;
+    border-bottom: 1px solid var(--border-subtle);
+    flex-shrink: 0;
+  }
+
+  .search-wrap {
+    position: relative;
+    margin-bottom: 10px;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255,255,255,.3);
+    pointer-events: none;
+  }
+
+  #search-input {
+    width: 100%;
+    background: #1e293b;
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 7px;
+    color: rgba(255,255,255,.8);
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    padding: 7px 10px 7px 30px;
+    transition: border-color .15s;
+  }
+  #search-input::placeholder { color: rgba(255,255,255,.28); }
+  #search-input:focus { outline: none; border-color: rgba(134,239,172,.3); background: #243044; }
+
+  .filters {
+    display: flex;
+    gap: 5px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .filters::-webkit-scrollbar { display: none; }
+
+  .filter-chip {
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,.1);
+    color: rgba(255,255,255,.45);
+    cursor: pointer;
+    background: transparent;
+    transition: all .15s;
+    white-space: nowrap;
+  }
+  .filter-chip:hover { border-color: rgba(255,255,255,.2); color: rgba(255,255,255,.7); }
+  .filter-chip.active {
+    background: rgba(22,163,74,.15);
+    border-color: rgba(22,163,74,.4);
+    color: #86efac;
+  }
+
+  #sidebar-nav {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 0 12px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,.1) transparent;
+  }
+  #sidebar-nav::-webkit-scrollbar { width: 4px; }
+  #sidebar-nav::-webkit-scrollbar-track { background: transparent; }
+  #sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 2px; }
+
+  .nav-group { margin-bottom: 4px; }
+
+  .nav-group-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.25);
+    padding: 8px 14px 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .nav-group-label .group-count {
+    font-size: 10px;
+    background: rgba(255,255,255,.07);
+    border-radius: 10px;
+    padding: 1px 5px;
+    color: rgba(255,255,255,.2);
+    font-weight: 500;
+    letter-spacing: 0;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 14px;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    transition: background .12s, border-color .12s;
+    position: relative;
+  }
+  .nav-item:hover { background: rgba(255,255,255,.04); }
+  .nav-item.active {
+    border-left-color: #16a34a;
+    background: rgba(22,163,74,.08);
+  }
+
+  .nav-item-num {
+    font-size: 10px;
+    color: rgba(255,255,255,.2);
+    font-weight: 500;
+    min-width: 18px;
+    text-align: right;
+    flex-shrink: 0;
+    font-family: 'Outfit', sans-serif;
+  }
+
+  .nav-item-title {
+    font-size: 12.5px;
+    color: rgba(255,255,255,.6);
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color .12s;
+  }
+  .nav-item:hover .nav-item-title { color: rgba(255,255,255,.85); }
+  .nav-item.active .nav-item-title { color: #86efac; font-weight: 500; }
+
+  .nav-item-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    opacity: .6;
+  }
+
+  /* ─── MAIN AREA ───────────────────────────────── */
+  #main {
+    position: fixed;
+    top: var(--topbar-h);
+    bottom: var(--bottombar-h);
+    left: var(--sidebar-w);
+    right: 0;
+    background: var(--bg-main);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  #browser-wrap {
+    display: flex;
+    flex-direction: column;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,.07),
+      0 8px 32px rgba(0,0,0,.6),
+      0 2px 8px rgba(0,0,0,.4);
+    background: var(--bg-chrome);
+    max-height: calc(100% - 40px);
+  }
+
+  /* Browser chrome */
+  #browser-chrome {
+    height: 48px;
+    background: var(--bg-chrome);
+    border-bottom: 1px solid rgba(255,255,255,.07);
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .traffic-lights {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .tl {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+  }
+  .tl-red { background: #ff5f57; }
+  .tl-yellow { background: #ffbd2e; }
+  .tl-green { background: #28c840; }
+
+  .address-bar {
+    flex: 1;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 6px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  .addr-lock {
+    color: rgba(134,239,172,.6);
+    flex-shrink: 0;
+  }
+
+  #address-url {
+    font-size: 12px;
+    color: rgba(255,255,255,.6);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .addr-https {
+    color: rgba(134,239,172,.7);
+    font-weight: 500;
+  }
+
+  .reload-btn {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,.3);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    transition: color .15s, background .15s;
+    flex-shrink: 0;
+  }
+  .reload-btn:hover { color: rgba(255,255,255,.7); background: rgba(255,255,255,.07); }
+
+  /* iframe container */
+  #iframe-container {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    background: #fff;
+  }
+
+  #proto-iframe {
+    border: none;
+    width: 1280px;
+    height: 900px;
+    transform-origin: top left;
+    display: block;
+  }
+
+  /* ─── BOTTOM BAR ──────────────────────────────── */
+  #bottombar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: var(--bottombar-h);
+    background: var(--bg-bottom);
+    border-top: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    z-index: 100;
+  }
+
+  .nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 7px;
+    color: rgba(255,255,255,.6);
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 6px 14px;
+    cursor: pointer;
+    transition: all .15s;
+    white-space: nowrap;
+  }
+  .nav-btn:hover:not(:disabled) {
+    background: rgba(255,255,255,.1);
+    border-color: rgba(255,255,255,.18);
+    color: #fff;
+  }
+  .nav-btn:disabled {
+    opacity: .3;
+    cursor: default;
+  }
+
+  .bb-center {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .prog-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.15);
+    transition: all .2s;
+  }
+  .prog-dot.active {
+    background: #16a34a;
+    width: 18px;
+    border-radius: 3px;
+    box-shadow: 0 0 8px rgba(22,163,74,.5);
+  }
+  .prog-dot.near { background: rgba(255,255,255,.25); }
+
+  /* ─── MAP MODAL ───────────────────────────────── */
+  #map-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: rgba(7,10,18,.88);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  #map-modal.open { display: flex; }
+
+  .map-header {
+    padding: 20px 24px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255,255,255,.07);
+    flex-shrink: 0;
+  }
+
+  .map-title {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    color: #fff;
+  }
+
+  .map-subtitle {
+    font-size: 13px;
+    color: rgba(255,255,255,.35);
+    margin-top: 2px;
+  }
+
+  .map-close {
+    background: rgba(255,255,255,.08);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 8px;
+    color: rgba(255,255,255,.6);
+    font-size: 13px;
+    padding: 6px 14px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all .15s;
+  }
+  .map-close:hover { background: rgba(255,255,255,.13); color: #fff; }
+
+  .map-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 24px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,.1) transparent;
+  }
+
+  .map-group {
+    margin-bottom: 24px;
+  }
+
+  .map-group-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.3);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .map-group-line {
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,.06);
+  }
+
+  .map-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .map-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.09);
+    border-radius: 7px;
+    padding: 7px 12px;
+    cursor: pointer;
+    transition: all .15s;
+    font-size: 12px;
+    color: rgba(255,255,255,.6);
+    font-family: 'Inter', sans-serif;
+  }
+  .map-chip:hover {
+    background: rgba(255,255,255,.1);
+    border-color: rgba(255,255,255,.18);
+    color: #fff;
+  }
+  .map-chip.active {
+    background: rgba(22,163,74,.14);
+    border-color: rgba(22,163,74,.45);
+    color: #86efac;
+  }
+
+  .map-chip-num {
+    font-size: 10px;
+    color: rgba(255,255,255,.25);
+    font-weight: 500;
+  }
+  .map-chip.active .map-chip-num { color: rgba(134,239,172,.45); }
+
+  /* ─── LOADING STATE ───────────────────────────── */
+  #loading-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(13,17,23,.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s;
+  }
+  #loading-overlay.visible { opacity: 1; pointer-events: all; }
+
+  .spinner {
+    width: 28px; height: 28px;
+    border: 2.5px solid rgba(22,163,74,.2);
+    border-top-color: #16a34a;
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ─── EMPTY SEARCH ────────────────────────────── */
+  .no-results {
+    padding: 24px 14px;
+    text-align: center;
+    color: rgba(255,255,255,.25);
+    font-size: 12px;
+    display: none;
+  }
+
+  /* ─── SCROLLBAR ───────────────────────────────── */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.08); border-radius: 3px; }
+
+  /* ─── TOOLTIP ─────────────────────────────────── */
+  [data-tip] { position: relative; }
+  [data-tip]::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1e293b;
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 5px;
+    color: rgba(255,255,255,.75);
+    font-size: 11px;
+    padding: 4px 8px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .15s;
+    z-index: 999;
+    font-family: 'Inter', sans-serif;
+  }
+  [data-tip]:hover::after { opacity: 1; }
+
+  /* ─── MISC ────────────────────────────────────── */
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════ TOP BAR ═══════════════════════════ -->
+<div id="topbar">
+  <div class="tb-left">
+    <div class="logo-mark">F</div>
+    <span class="logo-name">FacturaFlow</span>
+    <span class="proto-badge">Prototype</span>
+    <div class="tb-sep"></div>
+    <select class="flow-select" id="flow-select" onchange="filterByFlow(this.value)">
+      <option value="all">All Flows</option>
+      <option value="Onboarding">Onboarding</option>
+      <option value="Authentication">Authentication</option>
+      <option value="Core App">Core App</option>
+      <option value="Invoices">Invoices</option>
+      <option value="SAT & Compliance">SAT &amp; Compliance</option>
+      <option value="Exceptions">Exceptions</option>
+      <option value="Approval">Approval</option>
+      <option value="Workflows">Workflows</option>
+      <option value="Settings">Settings</option>
+      <option value="Developer">Developer</option>
+      <option value="Billing">Billing</option>
+      <option value="Admin & Ops">Admin &amp; Ops</option>
+      <option value="Empty States">Empty States</option>
+      <option value="Mobile">Mobile</option>
+    </select>
+  </div>
+
+  <div class="tb-center">
+    <div id="screen-title">Dashboard</div>
+    <div id="screen-counter">Screen 6 of 49</div>
+  </div>
+
+  <div class="tb-right">
+    <div class="kbd-hints">
+      <span class="kbd">←</span><span class="kbd">→</span>
+      <span style="color:rgba(255,255,255,.2)">navigate</span>
+      <span style="margin-left:4px" class="kbd">M</span>
+      <span style="color:rgba(255,255,255,.2)">map</span>
+    </div>
+    <div class="tb-sep" style="margin:0 4px"></div>
+    <button class="tb-link" onclick="openInNewTab()" data-tip="Open in new tab">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      Open
+    </button>
+    <select class="scale-select" id="scale-select" onchange="setScale(this.value)">
+      <option value="0.50">50%</option>
+      <option value="0.60">60%</option>
+      <option value="0.65" selected>65%</option>
+      <option value="0.75">75%</option>
+      <option value="1.00">100%</option>
+    </select>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ SIDEBAR ═══════════════════════════ -->
+<div id="sidebar">
+  <div class="sidebar-top">
+    <div class="search-wrap">
+      <svg class="search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="search-input" placeholder="Search screens…" oninput="search(this.value)" />
+    </div>
+    <div class="filters">
+      <button class="filter-chip active" onclick="setFilter('all', this)">All</button>
+      <button class="filter-chip" onclick="setFilter('core', this)">Core</button>
+      <button class="filter-chip" onclick="setFilter('settings', this)">Settings</button>
+      <button class="filter-chip" onclick="setFilter('admin', this)">Admin</button>
+      <button class="filter-chip" onclick="setFilter('mobile', this)">Mobile</button>
+    </div>
+  </div>
+
+  <div id="sidebar-nav">
+    <div class="no-results" id="no-results">No screens match your search</div>
+    <!-- Populated by JS -->
+  </div>
+</div>
+
+<!-- ═══════════════════════════ MAIN AREA ═════════════════════════ -->
+<div id="main">
+  <div id="browser-wrap">
+    <div id="browser-chrome">
+      <div class="traffic-lights">
+        <div class="tl tl-red"></div>
+        <div class="tl tl-yellow"></div>
+        <div class="tl tl-green"></div>
+      </div>
+
+      <div class="address-bar">
+        <svg class="addr-lock" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        <span id="address-url">
+          <span class="addr-https">https://</span>facturaflow.app/dashboard
+        </span>
+      </div>
+
+      <button class="reload-btn" onclick="reloadFrame()" data-tip="Reload screen">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+      </button>
+    </div>
+
+    <div id="iframe-container">
+      <div id="loading-overlay">
+        <div class="spinner"></div>
+      </div>
+      <iframe id="proto-iframe" src="screens/01-dashboard.html" onload="onFrameLoad()"></iframe>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ BOTTOM BAR ════════════════════════ -->
+<div id="bottombar">
+  <button class="nav-btn" id="btn-prev" onclick="prev()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    Previous
+  </button>
+
+  <div class="bb-center" id="progress-dots"></div>
+
+  <button class="nav-btn" id="btn-next" onclick="next()">
+    Next
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+  </button>
+</div>
+
+<!-- ═══════════════════════════ MAP MODAL ═════════════════════════ -->
+<div id="map-modal">
+  <div class="map-header">
+    <div>
+      <div class="map-title">Navigation Map</div>
+      <div class="map-subtitle">49 screens across 14 flows — click any screen to jump to it</div>
+    </div>
+    <button class="map-close" onclick="toggleMap()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      Close <span style="color:rgba(255,255,255,.3);font-size:10px">[Esc]</span>
+    </button>
+  </div>
+  <div class="map-body" id="map-body">
+    <!-- Populated by JS -->
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════ DATA ═══════════════════════════════
+const SCREENS = [
+  {n:1,  file:'screens/06-signup.html',              title:'Sign Up',              flow:'Onboarding',      url:'signup'},
+  {n:2,  file:'screens/34-onboarding-checklist.html',title:'Onboarding Checklist', flow:'Onboarding',      url:'onboarding'},
+  {n:3,  file:'screens/09-login.html',               title:'Login',                flow:'Authentication',  url:'login'},
+  {n:4,  file:'screens/10-forgot-password.html',     title:'Forgot Password',      flow:'Authentication',  url:'forgot-password'},
+  {n:5,  file:'screens/11-tenant-switcher.html',     title:'Workspace Switcher',   flow:'Authentication',  url:'workspace'},
+  {n:6,  file:'screens/01-dashboard.html',           title:'Dashboard',            flow:'Core App',        url:'dashboard'},
+  {n:7,  file:'screens/07-invoice-list.html',        title:'Invoice List',         flow:'Invoices',        url:'invoices'},
+  {n:8,  file:'screens/02-invoice-upload.html',      title:'Invoice Upload',       flow:'Invoices',        url:'invoices/upload'},
+  {n:9,  file:'screens/28-bulk-upload.html',         title:'Bulk Upload',          flow:'Invoices',        url:'invoices/bulk'},
+  {n:10, file:'screens/08-ai-extraction.html',       title:'AI Extraction',        flow:'Invoices',        url:'invoices/extract'},
+  {n:11, file:'screens/03-invoice-detail.html',      title:'Invoice Detail',       flow:'Invoices',        url:'invoices/INV-2024-0847'},
+  {n:12, file:'screens/04-sat-validation.html',      title:'SAT Validation',       flow:'SAT & Compliance',url:'invoices/sat-validate'},
+  {n:13, file:'screens/05-exception-queue.html',     title:'Exception Queue',      flow:'Exceptions',      url:'exceptions'},
+  {n:14, file:'screens/37-invoice-comparison.html',  title:'Invoice Comparison',   flow:'Exceptions',      url:'exceptions/compare'},
+  {n:15, file:'screens/35-approval-request.html',    title:'Approval Request',     flow:'Approval',        url:'approve/INV-2024-0847'},
+  {n:16, file:'screens/36-approval-chain.html',      title:'Approval Chain',       flow:'Approval',        url:'settings/approval-rules'},
+  {n:17, file:'screens/25-audit-trail.html',         title:'Audit Trail',          flow:'Core App',        url:'audit'},
+  {n:18, file:'screens/19-sat-dashboard.html',       title:'SAT Dashboard',        flow:'SAT & Compliance',url:'sat'},
+  {n:19, file:'screens/20-lista-negra.html',         title:'Lista Negra',          flow:'SAT & Compliance',url:'sat/blacklist'},
+  {n:20, file:'screens/21-rfc-directory.html',       title:'RFC Directory',        flow:'SAT & Compliance',url:'sat/rfc'},
+  {n:21, file:'screens/22-sat-settings.html',        title:'SAT Settings',         flow:'SAT & Compliance',url:'sat/settings'},
+  {n:22, file:'screens/26-suppliers.html',           title:'Suppliers',            flow:'Core App',        url:'suppliers'},
+  {n:23, file:'screens/27-reports.html',             title:'Reports',              flow:'Core App',        url:'reports'},
+  {n:24, file:'screens/23-workflow-list.html',       title:'Workflow List',        flow:'Workflows',       url:'workflows'},
+  {n:25, file:'screens/24-workflow-builder.html',    title:'Workflow Builder',     flow:'Workflows',       url:'workflows/ap-processor'},
+  {n:26, file:'screens/15-settings-profile.html',    title:'Profile Settings',     flow:'Settings',        url:'settings/profile'},
+  {n:27, file:'screens/16-settings-team.html',       title:'Team Management',      flow:'Settings',        url:'settings/team'},
+  {n:28, file:'screens/17-settings-integrations.html',title:'Integrations',        flow:'Settings',        url:'settings/integrations'},
+  {n:29, file:'screens/18-settings-notifications.html',title:'Notifications',      flow:'Settings',        url:'settings/notifications'},
+  {n:30, file:'screens/38-api-keys.html',            title:'API Keys',             flow:'Developer',       url:'settings/api-keys'},
+  {n:31, file:'screens/39-webhooks.html',            title:'Webhooks',             flow:'Developer',       url:'settings/webhooks'},
+  {n:32, file:'screens/40-global-search.html',       title:'Global Search',        flow:'Developer',       url:'search'},
+  {n:33, file:'screens/12-billing-overview.html',    title:'Billing Overview',     flow:'Billing',         url:'billing'},
+  {n:34, file:'screens/13-upgrade-plan.html',        title:'Upgrade Plan',         flow:'Billing',         url:'billing/upgrade'},
+  {n:35, file:'screens/14-payment-history.html',     title:'Payment History',      flow:'Billing',         url:'billing/history'},
+  {n:36, file:'screens/45-trial-expiry.html',        title:'Trial Expiry',         flow:'Billing',         url:'billing/trial-ended'},
+  {n:37, file:'screens/46-cancellation-flow.html',   title:'Cancellation Flow',    flow:'Billing',         url:'billing/cancel'},
+  {n:38, file:'screens/41-admin-tenants.html',       title:'Admin Tenants',        flow:'Admin & Ops',     url:'admin/tenants'},
+  {n:39, file:'screens/42-admin-impersonate.html',   title:'Impersonation',        flow:'Admin & Ops',     url:'admin/impersonate'},
+  {n:40, file:'screens/43-cw-field-mapper.html',     title:'CW Field Mapper',      flow:'Admin & Ops',     url:'settings/cw-mapping'},
+  {n:41, file:'screens/44-cw-sync-log.html',         title:'CW Sync Log',          flow:'Admin & Ops',     url:'settings/cw-log'},
+  {n:42, file:'screens/29-empty-invoices.html',      title:'Empty — Invoices',     flow:'Empty States',    url:'invoices'},
+  {n:43, file:'screens/30-empty-exceptions.html',    title:'Empty — Exceptions',   flow:'Empty States',    url:'exceptions'},
+  {n:44, file:'screens/31-empty-suppliers.html',     title:'Empty — Suppliers',    flow:'Empty States',    url:'suppliers'},
+  {n:45, file:'screens/32-empty-reports.html',       title:'Empty — Reports',      flow:'Empty States',    url:'reports'},
+  {n:46, file:'screens/33-empty-workflows.html',     title:'Empty — Workflows',    flow:'Empty States',    url:'workflows'},
+  {n:47, file:'screens/47-mobile-dashboard.html',    title:'Mobile Dashboard',     flow:'Mobile',          url:'m/dashboard'},
+  {n:48, file:'screens/48-mobile-invoice-detail.html',title:'Mobile Invoice',      flow:'Mobile',          url:'m/invoices/INV-2024-0847'},
+  {n:49, file:'screens/49-mobile-approve.html',      title:'Mobile Approve',       flow:'Mobile',          url:'m/approve/INV-2024-0847'},
+];
+
+const FLOW_COLORS = {
+  'Onboarding':      '#8b5cf6',
+  'Authentication':  '#3b82f6',
+  'Core App':        '#16a34a',
+  'Invoices':        '#0ea5e9',
+  'SAT & Compliance':'#f59e0b',
+  'Exceptions':      '#ef4444',
+  'Approval':        '#ec4899',
+  'Workflows':       '#8b5cf6',
+  'Settings':        '#6b7280',
+  'Developer':       '#06b6d4',
+  'Billing':         '#f97316',
+  'Admin & Ops':     '#dc2626',
+  'Empty States':    '#9ca3af',
+  'Mobile':          '#16a34a',
+};
+
+// Sidebar group definitions
+const GROUPS = [
+  { label: 'Onboarding',      filter: 'core',     indices: [0,1] },
+  { label: 'Authentication',  filter: 'core',     indices: [2,3,4] },
+  { label: 'Core App',        filter: 'core',     indices: [5,16,21,22] },
+  { label: 'Invoices',        filter: 'core',     indices: [6,7,8,9,10] },
+  { label: 'SAT & Compliance',filter: 'core',     indices: [11,17,18,19,20] },
+  { label: 'Exceptions',      filter: 'core',     indices: [12,13] },
+  { label: 'Approval',        filter: 'core',     indices: [14,15] },
+  { label: 'Workflows',       filter: 'core',     indices: [23,24] },
+  { label: 'Settings',        filter: 'settings', indices: [25,26,27,28] },
+  { label: 'Developer',       filter: 'settings', indices: [29,30,31] },
+  { label: 'Billing',         filter: 'core',     indices: [32,33,34,35,36] },
+  { label: 'Admin & Ops',     filter: 'admin',    indices: [37,38,39,40] },
+  { label: 'Empty States',    filter: 'core',     indices: [41,42,43,44,45] },
+  { label: 'Mobile',          filter: 'mobile',   indices: [46,47,48] },
+];
+
+// ═══════════════════════════ STATE ══════════════════════════════
+let currentIndex = 0;
+let currentScale = 0.65;
+let currentFilter = 'all';
+let searchQuery = '';
+let mapOpen = false;
+
+// ═══════════════════════════ INIT ═══════════════════════════════
+function init() {
+  buildSidebar();
+  buildMap();
+  applyScale(currentScale);
+
+  // Read hash
+  const hash = window.location.hash;
+  if (hash && hash.startsWith('#screen-')) {
+    const n = parseInt(hash.replace('#screen-', ''), 10);
+    if (n >= 1 && n <= SCREENS.length) {
+      currentIndex = n - 1;
+    }
+  }
+
+  goTo(currentIndex, true);
+}
+
+// ═══════════════════════════ NAVIGATION ═════════════════════════
+function goTo(index, skipHistory) {
+  if (index < 0 || index >= SCREENS.length) return;
+  currentIndex = index;
+
+  const screen = SCREENS[index];
+
+  // Update iframe
+  const iframe = document.getElementById('proto-iframe');
+  showLoading(true);
+  iframe.src = screen.file;
+
+  // Update top bar
+  document.getElementById('screen-title').textContent = screen.title;
+  document.getElementById('screen-counter').textContent = `Screen ${screen.n} of ${SCREENS.length}`;
+
+  // Update address bar
+  document.getElementById('address-url').innerHTML =
+    `<span class="addr-https">https://</span>facturaflow.app/${screen.url}`;
+
+  // Update sidebar
+  document.querySelectorAll('.nav-item').forEach(el => {
+    el.classList.toggle('active', parseInt(el.dataset.index) === index);
+  });
+
+  // Scroll active sidebar item into view
+  const activeItem = document.querySelector(`.nav-item[data-index="${index}"]`);
+  if (activeItem) {
+    activeItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+
+  // Update prev/next buttons
+  document.getElementById('btn-prev').disabled = index === 0;
+  document.getElementById('btn-next').disabled = index === SCREENS.length - 1;
+
+  // Update progress dots
+  updateProgressDots();
+
+  // Update map highlights
+  document.querySelectorAll('.map-chip').forEach(el => {
+    el.classList.toggle('active', parseInt(el.dataset.index) === index);
+  });
+
+  // Update flow selector to match current flow
+  const flowSelect = document.getElementById('flow-select');
+  const flowVal = GROUPS.find(g => g.indices.includes(index))?.label || 'all';
+  // Don't force-update flow selector if user has set a filter
+
+  // URL hash
+  if (!skipHistory) {
+    history.replaceState(null, '', `#screen-${screen.n}`);
+  }
+}
+
+function prev() {
+  if (currentIndex > 0) goTo(currentIndex - 1);
+}
+
+function next() {
+  if (currentIndex < SCREENS.length - 1) goTo(currentIndex + 1);
+}
+
+function onFrameLoad() {
+  showLoading(false);
+}
+
+function reloadFrame() {
+  showLoading(true);
+  const iframe = document.getElementById('proto-iframe');
+  iframe.src = iframe.src;
+}
+
+function openInNewTab() {
+  const screen = SCREENS[currentIndex];
+  window.open(screen.file, '_blank');
+}
+
+function showLoading(v) {
+  document.getElementById('loading-overlay').classList.toggle('visible', v);
+}
+
+// ═══════════════════════════ SCALE ══════════════════════════════
+function setScale(val) {
+  currentScale = parseFloat(val);
+  applyScale(currentScale);
+}
+
+function applyScale(s) {
+  const iframe = document.getElementById('proto-iframe');
+  const container = document.getElementById('iframe-container');
+  const wrap = document.getElementById('browser-wrap');
+
+  // Calculate display dimensions from 1280px wide at scale s
+  const displayW = Math.round(1280 * s);
+  const displayH = Math.round(900 * s);
+
+  // Make iframe container the right size
+  container.style.width = displayW + 'px';
+  container.style.height = displayH + 'px';
+
+  // Scale the iframe
+  iframe.style.transform = `scale(${s})`;
+  iframe.style.width = '1280px';
+  iframe.style.height = '900px';
+
+  // Wrap sizing — chrome is 48px tall on top
+  wrap.style.width = displayW + 'px';
+}
+
+// ═══════════════════════════ PROGRESS DOTS ═══════════════════════
+function updateProgressDots() {
+  const container = document.getElementById('progress-dots');
+  container.innerHTML = '';
+
+  const total = SCREENS.length;
+  const cur = currentIndex;
+
+  // Show dots: 2 before, active, 2 after
+  const positions = [cur - 2, cur - 1, cur, cur + 1, cur + 2];
+
+  positions.forEach(i => {
+    const dot = document.createElement('div');
+    dot.className = 'prog-dot';
+    if (i === cur) {
+      dot.classList.add('active');
+    } else if (Math.abs(i - cur) === 1) {
+      dot.classList.add('near');
+    }
+    if (i >= 0 && i < total) {
+      dot.style.cursor = 'pointer';
+      dot.onclick = () => goTo(i);
+    }
+    container.appendChild(dot);
+  });
+}
+
+// ═══════════════════════════ SIDEBAR ════════════════════════════
+function buildSidebar() {
+  const nav = document.getElementById('sidebar-nav');
+  nav.innerHTML = '';
+
+  GROUPS.forEach(group => {
+    const groupEl = document.createElement('div');
+    groupEl.className = 'nav-group';
+    groupEl.dataset.filter = group.filter;
+    groupEl.dataset.flow = group.label;
+
+    const labelEl = document.createElement('div');
+    labelEl.className = 'nav-group-label';
+    labelEl.innerHTML = `
+      ${group.label}
+      <span class="group-count">${group.indices.length}</span>
+    `;
+    groupEl.appendChild(labelEl);
+
+    const color = FLOW_COLORS[group.label] || '#6b7280';
+
+    group.indices.forEach(idx => {
+      const screen = SCREENS[idx];
+      const item = document.createElement('div');
+      item.className = 'nav-item';
+      item.dataset.index = idx;
+      item.dataset.title = screen.title.toLowerCase();
+      item.dataset.flow = group.label.toLowerCase();
+      item.innerHTML = `
+        <div class="nav-item-dot" style="background:${color}"></div>
+        <span class="nav-item-num">${String(screen.n).padStart(2,'0')}</span>
+        <span class="nav-item-title">${screen.title}</span>
+      `;
+      item.onclick = () => goTo(idx);
+      groupEl.appendChild(item);
+    });
+
+    nav.appendChild(groupEl);
+  });
+
+  nav.appendChild(document.getElementById('no-results'));
+}
+
+// ═══════════════════════════ MAP ════════════════════════════════
+function buildMap() {
+  const body = document.getElementById('map-body');
+  body.innerHTML = '';
+
+  GROUPS.forEach(group => {
+    const groupEl = document.createElement('div');
+    groupEl.className = 'map-group';
+
+    const color = FLOW_COLORS[group.label] || '#6b7280';
+
+    groupEl.innerHTML = `
+      <div class="map-group-label">
+        <span style="color:${color}">${group.label}</span>
+        <div class="map-group-line"></div>
+        <span style="color:rgba(255,255,255,.2);font-size:10px">${group.indices.length}</span>
+      </div>
+    `;
+
+    const chips = document.createElement('div');
+    chips.className = 'map-chips';
+
+    group.indices.forEach(idx => {
+      const screen = SCREENS[idx];
+      const chip = document.createElement('div');
+      chip.className = 'map-chip';
+      chip.dataset.index = idx;
+      chip.innerHTML = `
+        <span class="map-chip-num">${String(screen.n).padStart(2,'0')}</span>
+        ${screen.title}
+      `;
+      chip.onclick = () => {
+        goTo(idx);
+        toggleMap();
+      };
+      chips.appendChild(chip);
+    });
+
+    groupEl.appendChild(chips);
+    body.appendChild(groupEl);
+  });
+}
+
+function toggleMap() {
+  mapOpen = !mapOpen;
+  const modal = document.getElementById('map-modal');
+  modal.classList.toggle('open', mapOpen);
+
+  if (mapOpen) {
+    // Highlight current screen
+    document.querySelectorAll('.map-chip').forEach(el => {
+      el.classList.toggle('active', parseInt(el.dataset.index) === currentIndex);
+    });
+    // Scroll to active chip
+    const activeChip = document.querySelector('.map-chip.active');
+    if (activeChip) {
+      setTimeout(() => activeChip.scrollIntoView({ block: 'center', behavior: 'smooth' }), 50);
+    }
+  }
+}
+
+// ═══════════════════════════ SEARCH ════════════════════════════
+function search(q) {
+  searchQuery = q.toLowerCase().trim();
+  applyFilters();
+}
+
+function setFilter(filter, btn) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-chip').forEach(el => el.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilters();
+}
+
+function filterByFlow(flow) {
+  // When user picks a flow from the top dropdown, scroll sidebar to that group
+  if (flow === 'all') {
+    applyFilters();
+    return;
+  }
+
+  // Show the first screen of that flow
+  const group = GROUPS.find(g => g.label === flow);
+  if (group && group.indices.length > 0) {
+    const item = document.querySelector(`.nav-item[data-index="${group.indices[0]}"]`);
+    if (item) {
+      item.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    }
+  }
+}
+
+function applyFilters() {
+  let anyVisible = false;
+
+  document.querySelectorAll('.nav-group').forEach(group => {
+    const groupFilter = group.dataset.filter;
+    const groupFlow = group.dataset.flow?.toLowerCase() || '';
+
+    // Check filter
+    const filterPass = currentFilter === 'all' || groupFilter === currentFilter;
+
+    let groupHasVisible = false;
+
+    group.querySelectorAll('.nav-item').forEach(item => {
+      const title = item.dataset.title || '';
+      const flow = item.dataset.flow || '';
+      const searchPass = !searchQuery || title.includes(searchQuery) || flow.includes(searchQuery);
+      const visible = filterPass && searchPass;
+
+      item.style.display = visible ? '' : 'none';
+      if (visible) groupHasVisible = true;
+    });
+
+    // Show/hide group label
+    const label = group.querySelector('.nav-group-label');
+    const show = groupHasVisible;
+    group.style.display = show ? '' : 'none';
+    if (show) anyVisible = true;
+  });
+
+  document.getElementById('no-results').style.display = anyVisible ? 'none' : 'block';
+}
+
+// ═══════════════════════════ KEYBOARD ════════════════════════════
+document.addEventListener('keydown', e => {
+  const tag = document.activeElement.tagName.toLowerCase();
+  const isInput = tag === 'input' || tag === 'textarea' || tag === 'select';
+
+  if (e.key === 'Escape') {
+    if (mapOpen) toggleMap();
+    return;
+  }
+
+  if (e.key === 'M' || e.key === 'm') {
+    if (!isInput) { e.preventDefault(); toggleMap(); }
+    return;
+  }
+
+  if (e.key === '/') {
+    if (!isInput) {
+      e.preventDefault();
+      document.getElementById('search-input').focus();
+    }
+    return;
+  }
+
+  if (isInput) return;
+
+  if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); }
+  if (e.key === 'ArrowRight') { e.preventDefault(); next(); }
+});
+
+// Close map on backdrop click
+document.getElementById('map-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('map-modal')) toggleMap();
+});
+
+// ═══════════════════════════ START ══════════════════════════════
+window.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FacturaFlow — Settings · Webhooks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --green: #16a34a;
+    --green-dark: #15803d;
+    --green-light: #dcfce7;
+    --green-mid: #86efac;
+    --red: #ef4444;
+    --red-light: #fee2e2;
+    --yellow: #f59e0b;
+    --yellow-light: #fef3c7;
+    --blue: #3b82f6;
+    --blue-light: #dbeafe;
+    --purple: #8b5cf6;
+    --purple-light: #ede9fe;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+    --sidebar-w: 220px;
+    --topbar-h: 56px;
+    --settings-nav-w: 200px;
+    --panel-w: 400px;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--gray-50);
+    color: var(--gray-800);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* TOPBAR */
+  .topbar {
+    position: fixed; top: 0; left: 0; right: 0;
+    height: var(--topbar-h);
+    background: #fff;
+    border-bottom: 1px solid var(--gray-200);
+    display: flex; align-items: center;
+    padding: 0 24px 0 0;
+    z-index: 100;
+  }
+  .topbar-spacer { width: var(--sidebar-w); flex-shrink: 0; }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+  .topbar-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--purple); color: #fff;
+    font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .topbar-notif {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--gray-500); position: relative;
+  }
+  .topbar-notif::after {
+    content: ''; position: absolute; top: 6px; right: 6px;
+    width: 7px; height: 7px; background: var(--red);
+    border-radius: 50%; border: 2px solid #fff;
+  }
+  .breadcrumb {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 13px; color: var(--gray-400); padding-left: 24px;
+  }
+  .breadcrumb span { color: var(--gray-700); font-weight: 500; }
+
+  /* SIDEBAR */
+  .sidebar {
+    position: fixed; top: 0; left: 0; bottom: 0;
+    width: var(--sidebar-w); background: #fff;
+    border-right: 1px solid var(--gray-200);
+    display: flex; flex-direction: column;
+    z-index: 200; padding-top: var(--topbar-h);
+  }
+  .sidebar-logo {
+    display: flex; align-items: center; gap: 10px;
+    padding: 0 16px; height: var(--topbar-h);
+    position: absolute; top: 0; left: 0; right: 0;
+    border-bottom: 1px solid var(--gray-200);
+  }
+  .logo-icon {
+    width: 32px; height: 32px; background: var(--green); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 800;
+  }
+  .logo-text { font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 700; color: var(--gray-900); }
+  .sidebar-nav { flex: 1; padding: 12px 10px; overflow-y: auto; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+    border-radius: 8px; font-size: 13.5px; font-weight: 500;
+    color: var(--gray-600); cursor: pointer; text-decoration: none; margin-bottom: 2px;
+  }
+  .nav-item:hover { background: var(--gray-100); color: var(--gray-800); }
+  .nav-item.active { background: var(--green-light); color: var(--green); }
+  .nav-item svg { width: 17px; height: 17px; flex-shrink: 0; }
+  .nav-badge {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 10px;
+    font-family: 'Outfit', sans-serif;
+  }
+  .nav-divider { height: 1px; background: var(--gray-200); margin: 8px 0; }
+  .sidebar-trial {
+    margin: 10px; background: linear-gradient(135deg, var(--green-light), #fff);
+    border: 1px solid var(--green-mid); border-radius: 10px; padding: 12px 14px;
+  }
+  .trial-label { font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 700; color: var(--green); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .trial-days { font-size: 12px; color: var(--gray-600); margin-bottom: 8px; }
+  .trial-days strong { color: var(--gray-800); }
+  .trial-btn { display: block; width: 100%; background: var(--green); color: #fff; border: none; border-radius: 6px; padding: 7px; font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; text-align: center; }
+
+  /* LAYOUT */
+  .app-body {
+    display: flex;
+    padding-top: var(--topbar-h);
+    padding-left: var(--sidebar-w);
+    min-height: 100vh;
+  }
+
+  /* SETTINGS NAV */
+  .settings-nav {
+    width: var(--settings-nav-w); flex-shrink: 0;
+    background: #fff; border-right: 1px solid var(--gray-200);
+    padding: 24px 0; min-height: calc(100vh - var(--topbar-h));
+  }
+  .settings-nav-title {
+    font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 700;
+    color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.6px;
+    padding: 0 16px 10px;
+  }
+  .settings-nav-item {
+    display: flex; align-items: center; gap: 8px; padding: 9px 16px;
+    font-size: 13.5px; font-weight: 500; color: var(--gray-600); cursor: pointer;
+    border-left: 3px solid transparent; transition: all 0.15s;
+  }
+  .settings-nav-item:hover { background: var(--gray-50); color: var(--gray-800); }
+  .settings-nav-item.active { background: var(--green-light); color: var(--green); border-left-color: var(--green); font-weight: 600; }
+
+  /* MAIN */
+  .main-content {
+    flex: 1; padding: 32px 36px;
+    min-width: 0;
+    padding-right: calc(var(--panel-w) + 36px);
+  }
+  .page-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  .page-title { font-family: 'Outfit', sans-serif; font-size: 22px; font-weight: 700; color: var(--gray-900); margin-bottom: 4px; }
+  .page-subtitle { font-size: 13.5px; color: var(--gray-500); }
+
+  /* BUTTONS */
+  .btn-primary {
+    background: var(--green); color: #fff; border: none;
+    padding: 9px 16px; border-radius: 8px;
+    font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+    cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+    white-space: nowrap;
+  }
+  .btn-primary:hover { background: var(--green-dark); }
+  .btn-secondary {
+    background: #fff; color: var(--gray-600);
+    border: 1px solid var(--gray-300);
+    padding: 7px 12px; border-radius: 7px;
+    font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500;
+    cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
+  }
+  .btn-secondary:hover { background: var(--gray-50); }
+  .btn-danger-ghost {
+    background: #fff; color: var(--red);
+    border: 1px solid #fca5a5;
+    padding: 7px 12px; border-radius: 7px;
+    font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500;
+    cursor: pointer;
+  }
+  .btn-danger-ghost:hover { background: var(--red-light); }
+  .btn-yellow-ghost {
+    background: var(--yellow-light); color: #92400e;
+    border: 1px solid #fcd34d;
+    padding: 7px 12px; border-radius: 7px;
+    font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* SECTION TITLE */
+  .section-label {
+    font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 700;
+    color: var(--gray-700); margin-bottom: 14px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-label span { color: var(--gray-400); font-weight: 500; font-family: 'Inter', sans-serif; font-size: 12px; }
+
+  /* ENDPOINT CARDS */
+  .endpoint-card {
+    background: #fff; border: 1px solid var(--gray-200);
+    border-radius: 12px; padding: 20px 22px;
+    margin-bottom: 14px;
+  }
+  .endpoint-card.error { border-color: #fca5a5; }
+
+  .endpoint-top {
+    display: flex; align-items: flex-start; gap: 14px;
+    margin-bottom: 14px;
+  }
+  .endpoint-icon {
+    width: 38px; height: 38px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .endpoint-icon.green { background: var(--green-light); color: var(--green); }
+  .endpoint-icon.slack { background: #4a154b; color: #fff; }
+  .endpoint-icon.red { background: var(--red-light); color: var(--red); }
+
+  .endpoint-info { flex: 1; min-width: 0; }
+  .endpoint-url {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    color: var(--gray-700); margin-bottom: 6px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    max-width: 480px;
+  }
+  .endpoint-events { display: flex; flex-wrap: wrap; gap: 5px; }
+  .event-tag {
+    display: inline-block;
+    background: var(--green-light); color: var(--green);
+    font-size: 10.5px; font-weight: 600; padding: 2px 8px;
+    border-radius: 20px; font-family: 'JetBrains Mono', monospace;
+  }
+  .event-tag.all {
+    background: var(--purple-light); color: var(--purple);
+  }
+  .event-tag.slack {
+    background: #fdf4ff; color: #701a75;
+  }
+
+  .endpoint-meta {
+    display: flex; align-items: center; gap: 20px;
+    border-top: 1px solid var(--gray-100); padding-top: 12px; margin-top: 12px;
+  }
+  .meta-item { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--gray-500); }
+  .status-dot-inline {
+    width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+  }
+  .dot-green { background: var(--green); }
+  .dot-red { background: var(--red); }
+  .success-rate-green { color: var(--green); font-weight: 600; }
+  .success-rate-red { color: var(--red); font-weight: 600; }
+
+  .endpoint-actions { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+
+  /* ERROR ALERT */
+  .endpoint-error-alert {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--red-light); border: 1px solid #fca5a5;
+    border-radius: 8px; padding: 10px 14px; margin-top: 10px;
+    font-size: 12.5px; color: #991b1b;
+  }
+  .endpoint-error-alert svg { flex-shrink: 0; color: var(--red); }
+
+  /* DELIVERY LOG */
+  .card {
+    background: #fff; border: 1px solid var(--gray-200);
+    border-radius: 12px; overflow: hidden;
+    margin-bottom: 32px;
+  }
+  .card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px; border-bottom: 1px solid var(--gray-100);
+  }
+  .card-title { font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 700; color: var(--gray-800); }
+  .card-meta { font-size: 12px; color: var(--gray-400); }
+
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    background: var(--gray-50); border-bottom: 1px solid var(--gray-200);
+    padding: 10px 16px; text-align: left;
+    font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 700;
+    color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+  tbody tr { border-bottom: 1px solid var(--gray-100); transition: background 0.1s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--gray-50); }
+  td { padding: 11px 16px; font-size: 12.5px; color: var(--gray-700); vertical-align: middle; }
+
+  .event-type-mono {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    color: var(--gray-700); font-weight: 500;
+  }
+  .endpoint-truncated {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    color: var(--gray-500); max-width: 200px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;
+  }
+  .http-200 {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--green-light); color: var(--green);
+    font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 5px;
+    font-family: 'Outfit', sans-serif;
+  }
+  .http-503 {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--red-light); color: var(--red);
+    font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 5px;
+    font-family: 'Outfit', sans-serif;
+  }
+  .retry-badge {
+    display: inline-block;
+    background: var(--yellow-light); color: #92400e;
+    font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 4px;
+    font-family: 'Outfit', sans-serif; margin-left: 4px;
+  }
+  .duration-mono { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--gray-500); }
+  .timestamp-cell { font-size: 12px; color: var(--gray-400); white-space: nowrap; }
+
+  /* SIDE PANEL */
+  .side-panel {
+    position: fixed; top: var(--topbar-h); right: 0; bottom: 0;
+    width: var(--panel-w); background: #fff;
+    border-left: 1px solid var(--gray-200);
+    z-index: 150; display: flex; flex-direction: column;
+    box-shadow: -4px 0 20px rgba(0,0,0,0.06);
+  }
+  .panel-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 20px; border-bottom: 1px solid var(--gray-200);
+  }
+  .panel-title { font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 700; color: var(--gray-900); }
+  .panel-close {
+    width: 30px; height: 30px; border-radius: 7px;
+    background: var(--gray-100); border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--gray-500);
+  }
+  .panel-close:hover { background: var(--gray-200); }
+  .panel-body { flex: 1; overflow-y: auto; padding: 20px; }
+  .panel-footer { padding: 16px 20px; border-top: 1px solid var(--gray-200); }
+
+  /* PANEL FORM */
+  .form-group { margin-bottom: 18px; }
+  .form-label {
+    display: block; font-size: 13px; font-weight: 600;
+    color: var(--gray-700); margin-bottom: 7px;
+  }
+  .form-hint { font-size: 11.5px; color: var(--gray-400); margin-top: 4px; }
+  .form-input {
+    width: 100%; height: 40px; padding: 0 12px;
+    border: 1.5px solid var(--gray-300); border-radius: 8px;
+    font-family: 'Inter', sans-serif; font-size: 13px; color: var(--gray-900);
+    outline: none;
+  }
+  .form-input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(22,163,74,0.1); }
+  .form-input-with-btn { display: flex; gap: 8px; }
+  .form-input-with-btn .form-input { flex: 1; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; }
+  .btn-generate {
+    background: var(--gray-800); color: #fff; border: none;
+    padding: 0 14px; border-radius: 8px;
+    font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600;
+    cursor: pointer; white-space: nowrap; flex-shrink: 0;
+  }
+  .btn-generate:hover { background: var(--gray-900); }
+
+  .events-scroll {
+    border: 1.5px solid var(--gray-200); border-radius: 8px;
+    max-height: 240px; overflow-y: auto;
+    padding: 4px 0;
+  }
+  .event-group-label {
+    font-size: 10.5px; font-weight: 700; color: var(--gray-400);
+    text-transform: uppercase; letter-spacing: 0.5px;
+    padding: 8px 14px 4px; background: var(--gray-50);
+    border-bottom: 1px solid var(--gray-100);
+  }
+  .event-check-row {
+    display: flex; align-items: center; gap: 9px;
+    padding: 7px 14px; font-size: 12.5px; color: var(--gray-700);
+    cursor: pointer; transition: background 0.1s;
+  }
+  .event-check-row:hover { background: var(--gray-50); }
+  .event-check-row input[type="checkbox"] {
+    width: 14px; height: 14px; accent-color: var(--green); cursor: pointer;
+  }
+  .event-check-row code {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--gray-500);
+  }
+
+  .toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 0; border-top: 1px solid var(--gray-100); margin-top: 4px;
+  }
+  .toggle-label { font-size: 13px; font-weight: 500; color: var(--gray-700); }
+  .toggle-hint { font-size: 11.5px; color: var(--gray-400); margin-top: 2px; }
+  .toggle-switch {
+    width: 40px; height: 22px; background: var(--green);
+    border-radius: 11px; position: relative; cursor: pointer; flex-shrink: 0;
+  }
+  .toggle-switch::after {
+    content: ''; position: absolute;
+    width: 16px; height: 16px; background: #fff; border-radius: 50%;
+    top: 3px; right: 3px; transition: right 0.2s;
+  }
+</style>
+</head>
+<body style="padding-bottom:54px">
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="topbar-spacer">
+    <div class="sidebar-logo" style="position:relative; height:100%; border-bottom:none;">
+      <div class="logo-icon">F</div>
+      <span class="logo-text">FacturaFlow</span>
+    </div>
+  </div>
+  <div class="breadcrumb">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+    <span style="color:var(--gray-400)">Settings</span>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+    <span style="color:var(--gray-400)">Developer</span>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+    <span>Webhooks</span>
+  </div>
+  <div class="topbar-right">
+    <div class="topbar-notif">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    </div>
+    <div class="topbar-avatar">MG</div>
+  </div>
+</header>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">F</div>
+    <span class="logo-text">FacturaFlow</span>
+  </div>
+  <div class="sidebar-nav">
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Invoices
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      Exceptions
+      <span class="nav-badge">34</span>
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Suppliers
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      Workflows
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Reports
+    </a>
+    <div class="nav-divider"></div>
+    <a class="nav-item active" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+      Settings
+    </a>
+  </div>
+  <div class="sidebar-trial">
+    <div class="trial-label">Trial</div>
+    <div class="trial-days"><strong>8 days</strong> remaining</div>
+    <button class="trial-btn">Upgrade Plan</button>
+  </div>
+</nav>
+
+<!-- APP BODY -->
+<div class="app-body">
+  <aside class="settings-nav">
+    <div class="settings-nav-title">Settings</div>
+    <div class="settings-nav-item">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Account
+    </div>
+    <div class="settings-nav-item">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Team
+    </div>
+    <div class="settings-nav-item">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      Integrations
+    </div>
+    <div class="settings-nav-item">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      Notifications
+    </div>
+    <div class="settings-nav-item">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      Billing
+    </div>
+    <div class="settings-nav-item">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      Security
+    </div>
+    <div class="settings-nav-title" style="margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--gray-100);">Developer</div>
+    <div class="settings-nav-item">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+      API Keys
+    </div>
+    <div class="settings-nav-item active">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/><circle cx="18" cy="7" r="3"/><circle cx="12" cy="1" r="3"/><circle cx="6" cy="11" r="3"/></svg>
+      Webhooks
+    </div>
+    <div class="settings-nav-item">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      Docs &amp; SDKs
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div>
+        <div class="page-title">Webhooks</div>
+        <div class="page-subtitle">Receive real-time events in your systems when actions occur in FacturaFlow</div>
+      </div>
+      <button class="btn-primary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Endpoint
+      </button>
+    </div>
+
+    <!-- ENDPOINTS -->
+    <div class="section-label">
+      Endpoints <span>3 configured</span>
+    </div>
+
+    <!-- Card 1 — Active: n8n -->
+    <div class="endpoint-card">
+      <div class="endpoint-top">
+        <div class="endpoint-icon green">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/><circle cx="18" cy="7" r="3"/><circle cx="12" cy="1" r="3"/><circle cx="6" cy="11" r="3"/></svg>
+        </div>
+        <div class="endpoint-info">
+          <div class="endpoint-url">https://n8n.srv1139900.hstgr.cloud/webhook/factura-events</div>
+          <div class="endpoint-events">
+            <span class="event-tag">invoice.approved</span>
+            <span class="event-tag">invoice.rejected</span>
+            <span class="event-tag">exception.created</span>
+          </div>
+        </div>
+        <div class="endpoint-actions">
+          <button class="btn-secondary">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Test
+          </button>
+          <button class="btn-secondary">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Edit
+          </button>
+          <button class="btn-danger-ghost">Delete</button>
+        </div>
+      </div>
+      <div class="endpoint-meta">
+        <div class="meta-item">
+          <span class="status-dot-inline dot-green"></span>
+          <strong style="color:var(--green);">Active</strong>
+        </div>
+        <div class="meta-item">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Last triggered: <strong style="color:var(--gray-700);">2 min ago</strong>
+        </div>
+        <div class="meta-item">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Success rate: <span class="success-rate-green">99.2%</span>
+        </div>
+        <div class="meta-item" style="margin-left:auto;color:var(--gray-400);">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          2,847 deliveries (30d)
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2 — Active: Slack -->
+    <div class="endpoint-card">
+      <div class="endpoint-top">
+        <div class="endpoint-icon slack">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zM15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z"/></svg>
+        </div>
+        <div class="endpoint-info">
+          <div class="endpoint-url">https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXX</div>
+          <div class="endpoint-events">
+            <span class="event-tag slack">invoice.approved</span>
+            <span class="event-tag slack">exception.resolved</span>
+          </div>
+        </div>
+        <div class="endpoint-actions">
+          <button class="btn-secondary">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Test
+          </button>
+          <button class="btn-secondary">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Edit
+          </button>
+          <button class="btn-danger-ghost">Delete</button>
+        </div>
+      </div>
+      <div class="endpoint-meta">
+        <div class="meta-item">
+          <span class="status-dot-inline dot-green"></span>
+          <strong style="color:var(--green);">Active</strong>
+        </div>
+        <div class="meta-item">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Last triggered: <strong style="color:var(--gray-700);">1 hour ago</strong>
+        </div>
+        <div class="meta-item">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Success rate: <span class="success-rate-green">100%</span>
+        </div>
+        <div class="meta-item" style="margin-left:auto;color:var(--gray-400);">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          412 deliveries (30d)
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3 — Error -->
+    <div class="endpoint-card error">
+      <div class="endpoint-top">
+        <div class="endpoint-icon red">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <div class="endpoint-info">
+          <div class="endpoint-url" style="color:var(--red);">https://erp.charosfreight.com/api/webhooks/ff-events</div>
+          <div class="endpoint-events">
+            <span class="event-tag all">all events</span>
+          </div>
+        </div>
+        <div class="endpoint-actions">
+          <button class="btn-yellow-ghost">View Log</button>
+          <button class="btn-secondary">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Edit
+          </button>
+          <button class="btn-danger-ghost">Delete</button>
+        </div>
+      </div>
+      <div class="endpoint-meta">
+        <div class="meta-item">
+          <span class="status-dot-inline dot-red"></span>
+          <strong style="color:var(--red);">Error</strong>
+          <span style="font-size:12px;color:#991b1b;background:var(--red-light);padding:1px 8px;border-radius:4px;margin-left:4px;">SSL Certificate Error</span>
+        </div>
+        <div class="meta-item">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Last triggered: <strong style="color:var(--gray-700);">3 days ago</strong>
+        </div>
+        <div class="meta-item">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Success rate: <span class="success-rate-red">61.3%</span>
+        </div>
+      </div>
+      <div class="endpoint-error-alert">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        This endpoint has been failing repeatedly. Check the delivery log for details and verify your server's SSL certificate is valid and trusted.
+      </div>
+    </div>
+
+    <!-- DELIVERY LOG -->
+    <div class="section-label" style="margin-top:32px;">
+      Delivery Log <span>Last 10 deliveries across all endpoints</span>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Recent Deliveries</span>
+        <span class="card-meta">Auto-refreshes every 30s</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Event Type</th>
+            <th>Endpoint</th>
+            <th>Status</th>
+            <th>Duration</th>
+            <th>Timestamp</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="event-type-mono">invoice.approved</span></td>
+            <td><span class="endpoint-truncated">n8n.srv1139900.hstgr.cloud</span></td>
+            <td><span class="http-200">&#10003; 200</span></td>
+            <td><span class="duration-mono">142 ms</span></td>
+            <td class="timestamp-cell">Today, 14:38:02</td>
+          </tr>
+          <tr>
+            <td><span class="event-type-mono">invoice.approved</span></td>
+            <td><span class="endpoint-truncated">hooks.slack.com</span></td>
+            <td><span class="http-200">&#10003; 200</span></td>
+            <td><span class="duration-mono">89 ms</span></td>
+            <td class="timestamp-cell">Today, 14:38:01</td>
+          </tr>
+          <tr>
+            <td><span class="event-type-mono">exception.created</span></td>
+            <td><span class="endpoint-truncated">n8n.srv1139900.hstgr.cloud</span></td>
+            <td><span class="http-200">&#10003; 200</span></td>
+            <td><span class="duration-mono">217 ms</span></td>
+            <td class="timestamp-cell">Today, 13:55:44</td>
+          </tr>
+          <tr>
+            <td><span class="event-type-mono">invoice.rejected</span></td>
+            <td><span class="endpoint-truncated">erp.charosfreight.com</span></td>
+            <td>
+              <span class="http-503">&#10007; 503</span>
+              <span class="retry-badge">Retry 3/3</span>
+            </td>
+            <td><span class="duration-mono">30,000 ms</span></td>
+            <td class="timestamp-cell">Today, 13:12:09</td>
+          </tr>
+          <tr>
+            <td><span class="event-type-mono">invoice.approved</span></td>
+            <td><span class="endpoint-truncated">n8n.srv1139900.hstgr.cloud</span></td>
+            <td><span class="http-200">&#10003; 200</span></td>
+            <td><span class="duration-mono">155 ms</span></td>
+            <td class="timestamp-cell">Today, 12:44:17</td>
+          </tr>
+          <tr>
+            <td><span class="event-type-mono">supplier.updated</span></td>
+            <td><span class="endpoint-truncated">n8n.srv1139900.hstgr.cloud</span></td>
+            <td><span class="http-200">&#10003; 200</span></td>
+            <td><span class="duration-mono">98 ms</span></td>
+            <td class="timestamp-cell">Today, 11:30:53</td>
+          </tr>
+          <tr>
+            <td><span class="event-type-mono">exception.resolved</span></td>
+            <td><span class="endpoint-truncated">hooks.slack.com</span></td>
+            <td><span class="http-200">&#10003; 200</span></td>
+            <td><span class="duration-mono">74 ms</span></td>
+            <td class="timestamp-cell">Today, 10:18:27</td>
+          </tr>
+          <tr>
+            <td><span class="event-type-mono">invoice.approved</span></td>
+            <td><span class="endpoint-truncated">n8n.srv1139900.hstgr.cloud</span></td>
+            <td><span class="http-200">&#10003; 200</span></td>
+            <td><span class="duration-mono">183 ms</span></td>
+            <td class="timestamp-cell">Today, 09:52:11</td>
+          </tr>
+          <tr>
+            <td><span class="event-type-mono">invoice.created</span></td>
+            <td><span class="endpoint-truncated">erp.charosfreight.com</span></td>
+            <td>
+              <span class="http-503">&#10007; 503</span>
+              <span class="retry-badge">Retry 3/3</span>
+            </td>
+            <td><span class="duration-mono">30,000 ms</span></td>
+            <td class="timestamp-cell">Yesterday, 17:41:05</td>
+          </tr>
+          <tr>
+            <td><span class="event-type-mono">invoice.approved</span></td>
+            <td><span class="endpoint-truncated">n8n.srv1139900.hstgr.cloud</span></td>
+            <td><span class="http-200">&#10003; 200</span></td>
+            <td><span class="duration-mono">129 ms</span></td>
+            <td class="timestamp-cell">Yesterday, 16:07:33</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+</div>
+
+<!-- SIDE PANEL: Add Endpoint -->
+<aside class="side-panel">
+  <div class="panel-header">
+    <div class="panel-title">Add Webhook Endpoint</div>
+    <button class="panel-close">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+
+  <div class="panel-body">
+
+    <div class="form-group">
+      <label class="form-label">Endpoint URL</label>
+      <input class="form-input" type="url" placeholder="https://yoursite.com/webhook">
+      <div class="form-hint">Must be a publicly accessible HTTPS URL.</div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Signing Secret</label>
+      <div class="form-input-with-btn">
+        <input class="form-input" type="text" value="" placeholder="whsec_xxxxxxxxxxxxxxxxxxxx">
+        <button class="btn-generate">Generate</button>
+      </div>
+      <div class="form-hint">Used to verify webhook payloads via HMAC-SHA256 signature.</div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Events to Subscribe</label>
+      <div class="events-scroll">
+
+        <div class="event-group-label">Invoice Events</div>
+        <label class="event-check-row">
+          <input type="checkbox" checked>
+          <span>Invoice created</span>
+          <code>invoice.created</code>
+        </label>
+        <label class="event-check-row">
+          <input type="checkbox" checked>
+          <span>Invoice approved</span>
+          <code>invoice.approved</code>
+        </label>
+        <label class="event-check-row">
+          <input type="checkbox" checked>
+          <span>Invoice rejected</span>
+          <code>invoice.rejected</code>
+        </label>
+        <label class="event-check-row">
+          <input type="checkbox">
+          <span>Invoice deleted</span>
+          <code>invoice.deleted</code>
+        </label>
+
+        <div class="event-group-label">Exception Events</div>
+        <label class="event-check-row">
+          <input type="checkbox" checked>
+          <span>Exception created</span>
+          <code>exception.created</code>
+        </label>
+        <label class="event-check-row">
+          <input type="checkbox">
+          <span>Exception resolved</span>
+          <code>exception.resolved</code>
+        </label>
+        <label class="event-check-row">
+          <input type="checkbox">
+          <span>Exception escalated</span>
+          <code>exception.escalated</code>
+        </label>
+
+        <div class="event-group-label">Supplier Events</div>
+        <label class="event-check-row">
+          <input type="checkbox">
+          <span>Supplier created</span>
+          <code>supplier.created</code>
+        </label>
+        <label class="event-check-row">
+          <input type="checkbox">
+          <span>Supplier updated</span>
+          <code>supplier.updated</code>
+        </label>
+        <label class="event-check-row">
+          <input type="checkbox">
+          <span>RFC blacklisted</span>
+          <code>supplier.blacklisted</code>
+        </label>
+
+        <div class="event-group-label">Billing Events</div>
+        <label class="event-check-row">
+          <input type="checkbox">
+          <span>Subscription renewed</span>
+          <code>billing.renewed</code>
+        </label>
+        <label class="event-check-row">
+          <input type="checkbox">
+          <span>Payment failed</span>
+          <code>billing.payment_failed</code>
+        </label>
+      </div>
+    </div>
+
+    <div class="toggle-row">
+      <div>
+        <div class="toggle-label">Send test payload on save</div>
+        <div class="toggle-hint">Delivers a sample event immediately after adding</div>
+      </div>
+      <div class="toggle-switch"></div>
+    </div>
+
+  </div>
+
+  <div class="panel-footer">
+    <button class="btn-primary" style="width:100%;justify-content:center;padding:11px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Endpoint
+    </button>
+  </div>
+</aside>
+
+
+<!-- FF PROTO NAV -->
+<style>
+.pbar{position:fixed;bottom:0;left:0;right:0;height:54px;background:rgba(17,24,39,.97);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid rgba(255,255,255,.07);display:flex;align-items:center;padding:0 20px;gap:10px;z-index:99999;font-family:'Inter',sans-serif;}
+.pbtn{display:inline-flex;align-items:center;gap:6px;color:rgba(255,255,255,.65);font-size:12px;font-weight:500;text-decoration:none;padding:5px 12px;border-radius:6px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.09);white-space:nowrap;transition:all .15s;}
+.pbtn:hover{background:rgba(255,255,255,.13);color:#fff;text-decoration:none;}
+.pbtn.off{opacity:.2;pointer-events:none;}
+.pctr{flex:1;display:flex;align-items:center;justify-content:center;gap:10px;}
+.pflw{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#86efac;background:rgba(22,163,74,.14);border:1px solid rgba(22,163,74,.22);padding:2px 9px;border-radius:10px;}
+.ptit{font-size:13px;font-weight:600;color:#fff;font-family:'Outfit',sans-serif;}
+.pnum{font-size:11px;color:rgba(255,255,255,.28);}
+.pmapbtn{width:32px;height:32px;border-radius:6px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.09);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.4);flex-shrink:0;}
+.pmapbtn:hover{background:rgba(255,255,255,.13);color:#fff;}
+.pkeys{display:flex;align-items:center;gap:4px;font-size:10px;color:rgba(255,255,255,.18);margin-left:4px;}
+.pkey{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:3px;padding:1px 5px;font-family:monospace;}
+.pmap{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);z-index:100000;padding:36px 40px;overflow-y:auto;}
+.pmap.on{display:block;}
+.pmhd{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;}
+.pmhd h2{font-family:'Outfit',sans-serif;font-weight:700;font-size:22px;color:#fff;margin:0;}
+.pmcls{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:rgba(255,255,255,.6);cursor:pointer;font-size:20px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;}
+.pmcls:hover{background:rgba(255,255,255,.15);color:#fff;}
+.pmgrp{margin-bottom:18px;}
+.pmgl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.28);margin-bottom:7px;}
+.pmscrns{display:flex;flex-wrap:wrap;gap:5px;}
+.pmitem{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);border-radius:5px;text-decoration:none;font-size:11px;color:rgba(255,255,255,.55);transition:all .15s;font-family:'Inter',sans-serif;}
+.pmitem:hover{background:rgba(22,163,74,.18);border-color:rgba(22,163,74,.4);color:#fff;text-decoration:none;}
+.pmitem.cur{background:rgba(22,163,74,.2);border-color:#16a34a;color:#86efac;}
+.pmn{font-size:9px;color:rgba(255,255,255,.22);font-family:monospace;}
+</style>
+<div class="pbar">
+  <div style="display:flex;align-items:center;min-width:160px;">
+    <a class="pbtn" id="pp" href="38-api-keys.html">
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg>
+      API Keys
+    </a>
+  </div>
+  <div class="pctr">
+    <span class="pflw">Developer</span>
+    <span class="ptit">Webhooks</span>
+    <span class="pnum">31 / 49</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:6px;min-width:160px;justify-content:flex-end;">
+    <a class="pbtn" id="pn" href="40-global-search.html">
+      Global Search
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+    </a>
+    <button class="pmapbtn" onclick="document.getElementById('pmo').classList.toggle('on')" title="Screen map (M)">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    </button>
+    <div class="pkeys"><span class="pkey">&#8592;</span><span class="pkey">&#8594;</span><span style="margin-left:3px"><span class="pkey">M</span> map</span></div>
+  </div>
+</div>
+<div class="pmap" id="pmo">
+  <div style="max-width:1100px;margin:0 auto;">
+    <div class="pmhd"><h2>FacturaFlow &mdash; All 49 Screens</h2><button class="pmcls" onclick="document.getElementById('pmo').classList.remove('on')">&#x2715;</button></div>
+<div class="pmgrp"><div class="pmgl">Onboarding</div><div class="pmscrns">
+<a class="pmitem" href="06-signup.html"><span class="pmn">01</span>Sign Up</a>
+<a class="pmitem" href="34-onboarding-checklist.html"><span class="pmn">02</span>Onboarding Checklist</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Authentication</div><div class="pmscrns">
+<a class="pmitem" href="09-login.html"><span class="pmn">03</span>Login</a>
+<a class="pmitem" href="10-forgot-password.html"><span class="pmn">04</span>Forgot Password</a>
+<a class="pmitem" href="11-tenant-switcher.html"><span class="pmn">05</span>Workspace Switcher</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Core App</div><div class="pmscrns">
+<a class="pmitem" href="01-dashboard.html"><span class="pmn">06</span>Dashboard</a>
+<a class="pmitem" href="25-audit-trail.html"><span class="pmn">17</span>Audit Trail</a>
+<a class="pmitem" href="26-suppliers.html"><span class="pmn">22</span>Suppliers</a>
+<a class="pmitem" href="27-reports.html"><span class="pmn">23</span>Reports</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Invoices</div><div class="pmscrns">
+<a class="pmitem" href="07-invoice-list.html"><span class="pmn">07</span>Invoice List</a>
+<a class="pmitem" href="02-invoice-upload.html"><span class="pmn">08</span>Upload Invoice</a>
+<a class="pmitem" href="28-bulk-upload.html"><span class="pmn">09</span>Bulk Upload</a>
+<a class="pmitem" href="08-ai-extraction.html"><span class="pmn">10</span>AI Extraction</a>
+<a class="pmitem" href="03-invoice-detail.html"><span class="pmn">11</span>Invoice Detail</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">SAT &amp; Compliance</div><div class="pmscrns">
+<a class="pmitem" href="04-sat-validation.html"><span class="pmn">12</span>SAT Validation</a>
+<a class="pmitem" href="19-sat-dashboard.html"><span class="pmn">18</span>SAT Dashboard</a>
+<a class="pmitem" href="20-lista-negra.html"><span class="pmn">19</span>Lista Negra</a>
+<a class="pmitem" href="21-rfc-directory.html"><span class="pmn">20</span>RFC Directory</a>
+<a class="pmitem" href="22-sat-settings.html"><span class="pmn">21</span>SAT Settings</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Exceptions</div><div class="pmscrns">
+<a class="pmitem" href="05-exception-queue.html"><span class="pmn">13</span>Exception Queue</a>
+<a class="pmitem" href="37-invoice-comparison.html"><span class="pmn">14</span>Invoice Comparison</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Approval</div><div class="pmscrns">
+<a class="pmitem" href="35-approval-request.html"><span class="pmn">15</span>Approval Request</a>
+<a class="pmitem" href="36-approval-chain.html"><span class="pmn">16</span>Approval Chain</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Workflows</div><div class="pmscrns">
+<a class="pmitem" href="23-workflow-list.html"><span class="pmn">24</span>Workflow List</a>
+<a class="pmitem" href="24-workflow-builder.html"><span class="pmn">25</span>Workflow Builder</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Settings</div><div class="pmscrns">
+<a class="pmitem" href="15-settings-profile.html"><span class="pmn">26</span>Profile</a>
+<a class="pmitem" href="16-settings-team.html"><span class="pmn">27</span>Team</a>
+<a class="pmitem" href="17-settings-integrations.html"><span class="pmn">28</span>Integrations</a>
+<a class="pmitem" href="18-settings-notifications.html"><span class="pmn">29</span>Notifications</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Developer</div><div class="pmscrns">
+<a class="pmitem" href="38-api-keys.html"><span class="pmn">30</span>API Keys</a>
+<a class="pmitem cur" href="39-webhooks.html"><span class="pmn">31</span>Webhooks</a>
+<a class="pmitem" href="40-global-search.html"><span class="pmn">32</span>Global Search</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Billing</div><div class="pmscrns">
+<a class="pmitem" href="12-billing-overview.html"><span class="pmn">33</span>Billing Overview</a>
+<a class="pmitem" href="13-upgrade-plan.html"><span class="pmn">34</span>Upgrade Plan</a>
+<a class="pmitem" href="14-payment-history.html"><span class="pmn">35</span>Payment History</a>
+<a class="pmitem" href="45-trial-expiry.html"><span class="pmn">36</span>Trial Expiry</a>
+<a class="pmitem" href="46-cancellation-flow.html"><span class="pmn">37</span>Cancellation</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Admin &amp; Ops</div><div class="pmscrns">
+<a class="pmitem" href="41-admin-tenants.html"><span class="pmn">38</span>Admin Tenants</a>
+<a class="pmitem" href="42-admin-impersonate.html"><span class="pmn">39</span>Impersonation</a>
+<a class="pmitem" href="43-cw-field-mapper.html"><span class="pmn">40</span>CW Field Mapper</a>
+<a class="pmitem" href="44-cw-sync-log.html"><span class="pmn">41</span>CW Sync Log</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Empty States</div><div class="pmscrns">
+<a class="pmitem" href="29-empty-invoices.html"><span class="pmn">42</span>Empty Invoices</a>
+<a class="pmitem" href="30-empty-exceptions.html"><span class="pmn">43</span>Empty Exceptions</a>
+<a class="pmitem" href="31-empty-suppliers.html"><span class="pmn">44</span>Empty Suppliers</a>
+<a class="pmitem" href="32-empty-reports.html"><span class="pmn">45</span>Empty Reports</a>
+<a class="pmitem" href="33-empty-workflows.html"><span class="pmn">46</span>Empty Workflows</a>
+</div></div>
+<div class="pmgrp"><div class="pmgl">Mobile</div><div class="pmscrns">
+<a class="pmitem" href="47-mobile-dashboard.html"><span class="pmn">47</span>Mobile Dashboard</a>
+<a class="pmitem" href="48-mobile-invoice-detail.html"><span class="pmn">48</span>Mobile Invoice</a>
+<a class="pmitem" href="49-mobile-approve.html"><span class="pmn">49</span>Mobile Approve</a>
+</div></div>
+  </div>
+</div>
+<script>
+document.addEventListener('keydown',function(e){
+  var p=document.getElementById('pp'),n=document.getElementById('pn');
+  if(e.key==='ArrowLeft'&&p&&!p.classList.contains('off'))window.location.href=p.href;
+  if(e.key==='ArrowRight'&&n&&!n.classList.contains('off'))window.location.href=n.href;
+  if(e.key==='Escape')document.getElementById('pmo').classList.remove('on');
+  if(e.key.toLowerCase()==='m'&&document.activeElement.tagName!=='INPUT'&&document.activeElement.tagName!=='TEXTAREA')document.getElementById('pmo').classList.toggle('on');
+});
+</script>
+<!-- END FF PROTO NAV -->
+</body>
+</html>
